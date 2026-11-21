@@ -60,3 +60,31 @@ java -cp out DiscountTest
 This completes the three discount types, not the whole billing module. Bill,
 Cart, TaxCalculator, payments and checkout are still pending. The full repository
 also still needs Product and InvalidInputException from teammates.
+
+## 21 November 2026
+
+Added Payment, CashPayment and UpiPayment in the payment package.
+
+- Payment exposes pay(BigDecimal) and getMode(). Billing can hold either
+  implementation through this interface (polymorphism).
+- CashPayment compares tendered cash with the total and stores change only after
+  success. Failed attempts reset change. Cash and totals use scale 2, HALF_UP.
+- UpiPayment simulates success for a basic name@provider string with one @ and
+  no internal whitespace. It does not verify an account or transfer money.
+- Both reject null/negative totals by returning false. Zero totals are allowed
+  for fully discounted bills. Invalid tendered cash throws IllegalArgumentException.
+- These classes perform no console input, stock changes or invoice persistence.
+  Checkout must inspect the boolean result before changing stock. Each checkout
+  should receive a new payment object; these are not transaction records.
+
+Run the independent payment checks:
+
+```powershell
+javac --release 21 -Xlint:all -Werror -d out src/payment/Payment.java src/payment/CashPayment.java src/payment/UpiPayment.java tests/PaymentTest.java
+java -cp out PaymentTest
+```
+
+PaymentTest covers cash shortage, exact cash, change, rounding, reset after failure,
+zero/invalid totals, malformed UPI IDs and calls through the Payment interface.
+Bill, Cart, TaxCalculator and BillingService remain pending, along with integration
+with the teammates' Product and InvalidInputException implementations.
