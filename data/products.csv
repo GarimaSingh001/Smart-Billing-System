@@ -1,0 +1,16 @@
+# productId,name,category,price,quantity,reorderLevel[,expiryDate]  (expiryDate only for perishables)
+P001,Basmati Rice 5kg,GROCERY,520.00,40,10
+P002,Wheat Flour 10kg,GROCERY,410.00,35,10
+P003,Sugar 1kg,GROCERY,48.00,80,20
+P004,Toor Dal 1kg,GROCERY,145.00,50,15
+P005,Full Cream Milk 1L,DAIRY,66.00,60,20,2026-12-05
+P006,Paneer 200g,DAIRY,90.00,25,10,2026-12-01
+P007,Butter 100g,DAIRY,58.00,30,10,2027-01-15
+P008,Orange Juice 1L,BEVERAGE,110.00,45,15
+P009,Cola 2L,BEVERAGE,95.00,5,12
+P010,Potato Chips 150g,SNACKS,40.00,70,20
+P011,Chocolate Biscuits,SNACKS,30.00,90,25
+P012,Shampoo 340ml,PERSONAL_CARE,285.00,20,8
+P013,Toothpaste 150g,PERSONAL_CARE,92.00,55,15
+P014,Dishwash Liquid 500ml,HOUSEHOLD,125.00,30,10
+P015,Floor Cleaner 1L,HOUSEHOLD,175.00,8,10
