@@ -7,6 +7,12 @@ console build still needs Member B's `Inventory`, `InventoryService`,
 `ProductService` and `ProductComparators`. Run `tests/run-billing.ps1` in PowerShell
 to test the available modules; see `docs/member-c-progress.md` for limits and details.
 
+**Billing rehearsal:** after those tests compile the modules, run
+`java -cp out/billing ui.BillingDemo`. This standalone demo has no login and uses
+separate `demo-data` CSV files. It supports sample coupon entry, cash payment,
+invoice printing, stock saving and reload. The full application remains pending
+the inventory dependencies above.
+
 Java-based Supermarket POS and Billing System
 # Smart-Billing-System
 Java-based Supermarket POS and Billing System

@@ -185,10 +185,14 @@ public class CashierMenu extends MenuHandler {
     }
 
     private Discount chooseDiscount() {
-        System.out.println("Discount: 1) None  2) Percentage  3) Fixed amount");
-        return switch (input.readInt("Option [1-3]: ", 1, 3)) {
+        System.out.println("Discount: 1) None  2) Percentage  3) Fixed amount  4) Demo coupon");
+        return switch (input.readInt("Option [1-4]: ", 1, 4)) {
             case 2 -> new PercentageDiscount(input.readMoney("Discount percent: "));
             case 3 -> new FixedDiscount(input.readMoney("Discount amount (Rs): "));
+            case 4 -> {
+                System.out.println("Demo coupons: SAVE10 (10%), LESS50 (Rs 50).");
+                yield CouponMenu.choose(input, CouponMenu.demoCatalogue());
+            }
             default -> new FixedDiscount(BigDecimal.ZERO.setScale(2));
         };
     }

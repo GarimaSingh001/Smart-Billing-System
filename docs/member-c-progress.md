@@ -145,3 +145,28 @@ pass that result as checkout's Discount argument. Codes are reusable and stored
 only in memory. No coupon is automatically registered or applied. Coupon entry
 in the cashier menu, persistence, expiry dates and usage limits are not implemented.
 The existing missing inventory dependencies still block the full console build.
+
+### Runnable billing rehearsal (24 November)
+
+Added ui.BillingDemo, ui.CouponMenu and BillingDemoTest. The demo runs with the
+real shared classes and repositories without the unavailable inventory services.
+It has no authentication and is explicitly a rehearsal, not the full application.
+The cashier menu now includes a demo coupon option using the same CouponMenu;
+that full menu still needs integration testing once Member B's classes arrive.
+
+After `tests/run-billing.ps1`, run `java -cp out/billing ui.BillingDemo`.
+In IntelliJ use the Billing Demo run configuration. Demo products and invoices
+are saved under demo-data (ignored by Git), separate from the team's data folder.
+An optional first command-line argument selects another demo directory.
+
+For the worked example: choose 1, enter P1, quantity 2, blank to finish the cart,
+enter SAVE10, tender 1000, then choose 2 to exit. On a fresh demo this prints total
+945.00 and change 55.00, leaving stock 8. Rerunning reloads that stock and continues
+invoice numbering. LESS50 is a second sample code. Blank coupon means no discount.
+Sample product prices and category tax rates are demonstration values.
+
+Nine interactive checks cover invalid input/code retry, sale, CSV reload, numbering,
+overselling, insufficient cash, empty cart and inactive coupon cancellation.
+All existing tests also passed. The demo saves stock after each successful sale;
+invoice and stock are still separate file writes, not a crash-atomic transaction.
+A stock-write error after invoice save stops the demo and requests reconciliation.
