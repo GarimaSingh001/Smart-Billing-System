@@ -37,8 +37,10 @@ public final class Bill {
         this.discount = money(discount);
         this.tax = money(tax);
         this.total = money(total);
-        BigDecimal lines = this.items.stream().map(CartItem::getLineAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal lines = BigDecimal.ZERO;
+        for (CartItem item : this.items) {
+            lines = lines.add(item.getLineAmount());
+        }
         if (lines.compareTo(this.subtotal) != 0 || this.discount.compareTo(this.subtotal) > 0
                 || this.subtotal.subtract(this.discount).add(this.tax).compareTo(this.total) != 0) {
             throw new IllegalArgumentException("Invoice totals do not match its items.");

@@ -1,7 +1,5 @@
 package util;
 
-import java.util.concurrent.atomic.AtomicLong;
-
 /**
  * Background daemon thread that marks a login session as expired after a period without activity.
  * The console thread calls touch() on every input and checks isExpired() before trusting the input.
@@ -10,8 +8,9 @@ public class SessionMonitor implements Runnable {
 
     private final long timeoutNanos;
     private final long pollMillis;
-    private final AtomicLong lastActivity = new AtomicLong(System.nanoTime());
-    private volatile boolean expired;
+    private long lastActivity = System.nanoTime();
+    private boolean expired;
+    private boolean stopped;
     private Thread thread;
 
     /** Creates a monitor with an idle timeout and a polling interval, both in milliseconds. */
@@ -34,27 +33,31 @@ public class SessionMonitor implements Runnable {
     }
 
     /** Stops the thread by interrupting it and waits briefly for it to finish (join). */
-    public synchronized void stop() {
-        if (thread == null) {
-            return;
+    public void stop() {
+        Thread toStop;
+        synchronized (this) {
+            stopped = true;
+            toStop = thread;
         }
-        thread.interrupt();
+        if (toStop == null) { return; }
+        toStop.interrupt();
         try {
-            thread.join(1000);
+            // Do not hold this object's lock while joining the worker.
+            toStop.join(1000);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
     }
 
     /** Records user activity; has no effect once the session has expired. */
-    public void touch() {
-        if (!expired) {
-            lastActivity.set(System.nanoTime());
+    public synchronized void touch() {
+        if (!expired && !stopped) {
+            lastActivity = System.nanoTime();
         }
     }
 
     /** Returns true when the session timed out. */
-    public boolean isExpired() {
+    public synchronized boolean isExpired() {
         return expired;
     }
 
@@ -69,9 +72,12 @@ public class SessionMonitor implements Runnable {
         try {
             while (!Thread.currentThread().isInterrupted()) {
                 Thread.sleep(pollMillis);
-                if (System.nanoTime() - lastActivity.get() >= timeoutNanos) {
-                    expired = true;
-                    return;
+                synchronized (this) {
+                    if (stopped) { return; }
+                    if (System.nanoTime() - lastActivity >= timeoutNanos) {
+                        expired = true;
+                        return;
+                    }
                 }
             }
         } catch (InterruptedException e) {

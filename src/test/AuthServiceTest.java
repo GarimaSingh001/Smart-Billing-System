@@ -26,10 +26,30 @@ public class AuthServiceTest {
         check("cashier logs in with cashier/cash123", auth.login("cashier", "cash123").getRole() == Role.CASHIER);
         check("username is case-insensitive", auth.login("ADMIN", "admin123").getUsername().equals("admin"));
         check("username is trimmed", auth.login("  admin  ", "admin123") != null);
-        expectThrows("wrong password rejected", AuthenticationException.class, () -> auth.login("admin", "nope"));
-        expectThrows("unknown user rejected", AuthenticationException.class, () -> auth.login("ghost", "whatever"));
-        expectThrows("blank username rejected", AuthenticationException.class, () -> auth.login("", "x"));
-        expectThrows("blank password rejected", AuthenticationException.class, () -> auth.login("admin", ""));
+        expectThrows("wrong password rejected", AuthenticationException.class, new TestSupport.Block() {
+            @Override
+            public void run() throws Exception {
+                auth.login("admin", "nope");
+            }
+        });
+        expectThrows("unknown user rejected", AuthenticationException.class, new TestSupport.Block() {
+            @Override
+            public void run() throws Exception {
+                auth.login("ghost", "whatever");
+            }
+        });
+        expectThrows("blank username rejected", AuthenticationException.class, new TestSupport.Block() {
+            @Override
+            public void run() throws Exception {
+                auth.login("", "x");
+            }
+        });
+        expectThrows("blank password rejected", AuthenticationException.class, new TestSupport.Block() {
+            @Override
+            public void run() throws Exception {
+                auth.login("admin", "");
+            }
+        });
         try {
             auth.login("admin", "bad");
         } catch (AuthenticationException e) {
@@ -87,20 +107,60 @@ public class AuthServiceTest {
         check("new user gets the next id", created.getUserId().equals("U003"));
         check("new user can log in", users.login("anil_k", "secret1").getRole() == Role.CASHIER);
         check("user list has 3 entries", users.getAllUsers().size() == 3);
-        expectThrows("duplicate username rejected", InvalidInputException.class, () -> users.createUser("ANIL_K", "secret1", Role.CASHIER));
-        expectThrows("short password rejected", InvalidInputException.class, () -> users.createUser("bob", "123", Role.CASHIER));
-        expectThrows("bad username rejected", InvalidInputException.class, () -> users.createUser("a b", "secret1", Role.CASHIER));
-        expectThrows("null role rejected", InvalidInputException.class, () -> users.createUser("bob", "secret1", null));
-        expectThrows("cannot delete yourself", InvalidInputException.class, () -> users.removeUser("admin", boss));
-        expectThrows("cannot delete unknown user", InvalidInputException.class, () -> users.removeUser("ghost", boss));
+        expectThrows("duplicate username rejected", InvalidInputException.class, new TestSupport.Block() {
+            @Override
+            public void run() throws Exception {
+                users.createUser("ANIL_K", "secret1", Role.CASHIER);
+            }
+        });
+        expectThrows("short password rejected", InvalidInputException.class, new TestSupport.Block() {
+            @Override
+            public void run() throws Exception {
+                users.createUser("bob", "123", Role.CASHIER);
+            }
+        });
+        expectThrows("bad username rejected", InvalidInputException.class, new TestSupport.Block() {
+            @Override
+            public void run() throws Exception {
+                users.createUser("a b", "secret1", Role.CASHIER);
+            }
+        });
+        expectThrows("null role rejected", InvalidInputException.class, new TestSupport.Block() {
+            @Override
+            public void run() throws Exception {
+                users.createUser("bob", "secret1", null);
+            }
+        });
+        expectThrows("cannot delete yourself", InvalidInputException.class, new TestSupport.Block() {
+            @Override
+            public void run() throws Exception {
+                users.removeUser("admin", boss);
+            }
+        });
+        expectThrows("cannot delete unknown user", InvalidInputException.class, new TestSupport.Block() {
+            @Override
+            public void run() throws Exception {
+                users.removeUser("ghost", boss);
+            }
+        });
         users.removeUser("anil_k", boss);
-        check("deleted user is gone", users.findByUsername("anil_k").isEmpty());
-        expectThrows("deleted user cannot log in", AuthenticationException.class, () -> users.login("anil_k", "secret1"));
+        check("deleted user is gone", users.findByUsername("anil_k") == null);
+        expectThrows("deleted user cannot log in", AuthenticationException.class, new TestSupport.Block() {
+            @Override
+            public void run() throws Exception {
+                users.login("anil_k", "secret1");
+            }
+        });
 
         users.createUser("second_admin", "secret1", Role.ADMIN);
         users.removeUser("admin", users.login("second_admin", "secret1"));
         expectThrows("last administrator cannot be deleted", InvalidInputException.class,
-                () -> users.removeUser("second_admin", users.login("cashier", "cash123")));
+                new TestSupport.Block() {
+            @Override
+            public void run() throws Exception {
+                users.removeUser("second_admin", users.login("cashier", "cash123"));
+            }
+        });
 
         AuthService pwd = freshService();
         User cashier = pwd.login("cashier", "cash123");
@@ -108,9 +168,19 @@ public class AuthServiceTest {
         check("old password stops working", !cashier.checkPassword("cash123"));
         check("new password works", pwd.login("cashier", "newpass9") != null);
         expectThrows("change with wrong current password rejected", AuthenticationException.class,
-                () -> pwd.changePassword(cashier, "wrong", "another1"));
+                new TestSupport.Block() {
+            @Override
+            public void run() throws Exception {
+                pwd.changePassword(cashier, "wrong", "another1");
+            }
+        });
         expectThrows("change to weak password rejected", InvalidInputException.class,
-                () -> pwd.changePassword(cashier, "newpass9", "abc"));
+                new TestSupport.Block() {
+            @Override
+            public void run() throws Exception {
+                pwd.changePassword(cashier, "newpass9", "abc");
+            }
+        });
         pwd.resetPassword("cashier", "reset999", pwd.login("admin", "admin123"));
         check("admin reset works", pwd.login("cashier", "reset999") != null);
 
@@ -124,7 +194,12 @@ public class AuthServiceTest {
         }
         check("log keeps only its capacity", log.size() == 3);
         check("newest event comes first", log.getRecent(1).get(0).contains("event 4"));
-        expectThrows("capacity 0 rejected", IllegalArgumentException.class, () -> new AuditLog(0));
+        expectThrows("capacity 0 rejected", IllegalArgumentException.class, new TestSupport.Block() {
+            @Override
+            public void run() throws Exception {
+                new AuditLog(0);
+            }
+        });
     }
 
     /** Standalone entry point. */

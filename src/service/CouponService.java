@@ -34,7 +34,14 @@ public final class CouponService {
 
     /** Returns an unmodifiable list of registered coupons sorted by code. */
     public List<Coupon> getAll() {
-        return coupons.values().stream().sorted(Comparator.comparing(Coupon::getCode)).toList();
+        List<Coupon> result = new java.util.ArrayList<>(coupons.values());
+        result.sort(new Comparator<Coupon>() {
+            @Override
+            public int compare(Coupon first, Coupon second) {
+                return first.getCode().compareTo(second.getCode());
+            }
+        });
+        return java.util.Collections.unmodifiableList(result);
     }
 
     private Coupon find(String code) throws InvalidInputException {

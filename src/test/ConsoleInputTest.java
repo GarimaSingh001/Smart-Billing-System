@@ -24,12 +24,17 @@ public class ConsoleInputTest {
         check("readNonBlank skips empty lines", over("\n   \nmilk\n").readNonBlank("s: ").equals("milk"));
         check("readMoney rounds HALF_UP to 2 decimals", over("12.345\n").readMoney("m: ").equals(new BigDecimal("12.35")));
         check("readMoney rejects text and negatives", over("abc\n-5\n9.5\n").readMoney("m: ").equals(new BigDecimal("9.50")));
-        check("optional money: blank means keep", over("\n").readOptionalMoney("m: ").isEmpty());
-        check("optional int: value is returned", over("12\n").readOptionalInt("n: ", 0, 20).orElse(-1) == 12);
+        check("optional money: blank means keep", over("\n").readOptionalMoney("m: ") == null);
+        check("optional int: value is returned", over("12\n").readOptionalInt("n: ", 0, 20) == 12);
         check("yes/no accepts 'Yes'", over("maybe\nYes\n").readYesNo("ok?"));
         check("yes/no accepts 'n'", !over("n\n").readYesNo("ok?"));
         expectThrows("end of input is reported, not an endless loop", ConsoleInput.InputClosedException.class,
-                () -> over("abc\n").readInt("n: ", 1, 5));
+                new TestSupport.Block() {
+            @Override
+            public void run() throws Exception {
+                over("abc\n").readInt("n: ", 1, 5);
+            }
+        });
 
         SessionMonitor monitor = new SessionMonitor(100, 20);
         monitor.start();
@@ -37,7 +42,12 @@ public class ConsoleInputTest {
         check("input works before the timeout", timed.readLine("x: ").equals("a"));
         Thread.sleep(400);
         expectThrows("input after the idle timeout ends the session", ConsoleInput.SessionExpiredException.class,
-                () -> timed.readLine("x: "));
+                new TestSupport.Block() {
+            @Override
+            public void run() throws Exception {
+                timed.readLine("x: ");
+            }
+        });
         monitor.stop();
     }
 

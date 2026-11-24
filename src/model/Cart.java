@@ -39,8 +39,11 @@ public final class Cart {
 
     /** Returns the sum of the current line amounts. */
     public BigDecimal getSubtotal() {
-        return items.stream().map(CartItem::getLineAmount)
-                .reduce(new BigDecimal("0.00"), BigDecimal::add);
+        BigDecimal subtotal = new BigDecimal("0.00");
+        for (CartItem item : items) {
+            subtotal = subtotal.add(item.getLineAmount());
+        }
+        return subtotal;
     }
 
     /** Returns copies of cart lines so callers cannot bypass cart quantity controls. */

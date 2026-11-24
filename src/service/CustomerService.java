@@ -3,7 +3,6 @@ package service;
 import exception.InvalidInputException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import model.Customer;
 
 /** Adds, finds and links customers. The cashier can also choose Walk-in. */
@@ -40,15 +39,21 @@ public class CustomerService {
     /** Finds a customer by phone number, or returns null when no customer matches. */
     public Customer findByPhone(String phone) {
         String wanted = phone == null ? "" : phone.trim();
-        return customers.stream().filter(c -> c.getPhone().equals(wanted)).findFirst().orElse(null);
+        for (Customer customer : customers) {
+            if (customer.getPhone().equals(wanted)) { return customer; }
+        }
+        return null;
     }
 
-    /** Finds a customer by id; WALK-IN is always found. */
-    public Optional<Customer> findById(String customerId) {
+    /** Finds a customer by id or returns null; WALK-IN is always found. */
+    public Customer findById(String customerId) {
         if (WALK_IN.getCustomerId().equals(customerId)) {
-            return Optional.of(WALK_IN);
+            return WALK_IN;
         }
-        return customers.stream().filter(c -> c.getCustomerId().equals(customerId)).findFirst();
+        for (Customer customer : customers) {
+            if (customer.getCustomerId().equals(customerId)) { return customer; }
+        }
+        return null;
     }
 
     /** Links a bill to a customer; walk-in bills are not stored. */
@@ -56,8 +61,8 @@ public class CustomerService {
         if (WALK_IN.getCustomerId().equals(customerId)) {
             return;
         }
-        Customer customer = findById(customerId)
-                .orElseThrow(() -> new InvalidInputException("Unknown customer id: " + customerId));
+        Customer customer = findById(customerId);
+        if (customer == null) { throw new InvalidInputException("Unknown customer id: " + customerId); }
         customer.addBillId(billId);
     }
 

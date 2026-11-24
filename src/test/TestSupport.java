@@ -4,7 +4,6 @@ package test;
 public final class TestSupport {
 
     /** A block of code that may throw. */
-    @FunctionalInterface
     public interface Block {
         /** Runs the code under test. */
         void run() throws Exception;

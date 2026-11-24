@@ -98,52 +98,162 @@ public class ProductPart1Test {
         System.out.println("\n--- Test 9: Invalid Price and Malformed CSV Handling ---");
         // Invalid prices in constructor
         rejects("Reject null price in constructor",
-                () -> new Product("P001", "Item", Category.GROCERY, null, 10, 5));
+                new Runnable() {
+            @Override
+            public void run() {
+                new Product("P001", "Item", Category.GROCERY, null, 10, 5);
+            }
+        });
         rejects("Reject negative price in constructor",
-                () -> new Product("P001", "Item", Category.GROCERY, new BigDecimal("-10.00"), 10, 5));
+                new Runnable() {
+            @Override
+            public void run() {
+                new Product("P001", "Item", Category.GROCERY, new BigDecimal("-10.00"), 10, 5);
+            }
+        });
         rejects("Reject zero price in constructor",
-                () -> new Product("P001", "Item", Category.GROCERY, BigDecimal.ZERO, 10, 5));
+                new Runnable() {
+            @Override
+            public void run() {
+                new Product("P001", "Item", Category.GROCERY, BigDecimal.ZERO, 10, 5);
+            }
+        });
 
         // Invalid prices in setter
         Product p = new Product("P001", "Item", Category.GROCERY, new BigDecimal("10.00"), 10, 5);
-        rejects("Reject null price in setPrice", () -> p.setPrice(null));
-        rejects("Reject negative price in setPrice", () -> p.setPrice(new BigDecimal("-1.00")));
-        rejects("Reject zero price in setPrice", () -> p.setPrice(BigDecimal.ZERO));
+        rejects("Reject null price in setPrice", new Runnable() {
+            @Override
+            public void run() {
+                p.setPrice(null);
+            }
+        });
+        rejects("Reject negative price in setPrice", new Runnable() {
+            @Override
+            public void run() {
+                p.setPrice(new BigDecimal("-1.00"));
+            }
+        });
+        rejects("Reject zero price in setPrice", new Runnable() {
+            @Override
+            public void run() {
+                p.setPrice(BigDecimal.ZERO);
+            }
+        });
 
         // Invalid quantities
         rejects("Reject negative quantity in constructor",
-                () -> new Product("P001", "Item", Category.GROCERY, new BigDecimal("10.00"), -1, 5));
-        rejects("Reject negative quantity in setQuantity", () -> p.setQuantity(-5));
+                new Runnable() {
+            @Override
+            public void run() {
+                new Product("P001", "Item", Category.GROCERY, new BigDecimal("10.00"), -1, 5);
+            }
+        });
+        rejects("Reject negative quantity in setQuantity", new Runnable() {
+            @Override
+            public void run() {
+                p.setQuantity(-5);
+            }
+        });
 
         // Invalid IDs and names
         rejects("Reject null ID",
-                () -> new Product(null, "Item", Category.GROCERY, new BigDecimal("10.00"), 10, 5));
+                new Runnable() {
+            @Override
+            public void run() {
+                new Product(null, "Item", Category.GROCERY, new BigDecimal("10.00"), 10, 5);
+            }
+        });
         rejects("Reject blank ID",
-                () -> new Product("   ", "Item", Category.GROCERY, new BigDecimal("10.00"), 10, 5));
+                new Runnable() {
+            @Override
+            public void run() {
+                new Product("   ", "Item", Category.GROCERY, new BigDecimal("10.00"), 10, 5);
+            }
+        });
         rejects("Reject comma in ID",
-                () -> new Product("P,01", "Item", Category.GROCERY, new BigDecimal("10.00"), 10, 5));
+                new Runnable() {
+            @Override
+            public void run() {
+                new Product("P,01", "Item", Category.GROCERY, new BigDecimal("10.00"), 10, 5);
+            }
+        });
         rejects("Reject null name",
-                () -> new Product("P001", null, Category.GROCERY, new BigDecimal("10.00"), 10, 5));
+                new Runnable() {
+            @Override
+            public void run() {
+                new Product("P001", null, Category.GROCERY, new BigDecimal("10.00"), 10, 5);
+            }
+        });
         rejects("Reject blank name",
-                () -> new Product("P001", "  ", Category.GROCERY, new BigDecimal("10.00"), 10, 5));
+                new Runnable() {
+            @Override
+            public void run() {
+                new Product("P001", "  ", Category.GROCERY, new BigDecimal("10.00"), 10, 5);
+            }
+        });
         rejects("Reject comma in name",
-                () -> new Product("P001", "Item, A", Category.GROCERY, new BigDecimal("10.00"), 10, 5));
+                new Runnable() {
+            @Override
+            public void run() {
+                new Product("P001", "Item, A", Category.GROCERY, new BigDecimal("10.00"), 10, 5);
+            }
+        });
 
         // CSV parsing failures
-        rejects("Reject null CSV line", () -> Product.fromCsv(null));
-        rejects("Reject blank CSV line", () -> Product.fromCsv("   "));
+        rejects("Reject null CSV line", new Runnable() {
+            @Override
+            public void run() {
+                Product.fromCsv(null);
+            }
+        });
+        rejects("Reject blank CSV line", new Runnable() {
+            @Override
+            public void run() {
+                Product.fromCsv("   ");
+            }
+        });
         rejects("Reject CSV with 5 columns",
-                () -> Product.fromCsv("P001,Name,GROCERY,50.00,10"));
+                new Runnable() {
+            @Override
+            public void run() {
+                Product.fromCsv("P001,Name,GROCERY,50.00,10");
+            }
+        });
         rejects("Reject CSV with 7 columns",
-                () -> Product.fromCsv("P001,Name,GROCERY,50.00,10,5,EXTRA"));
+                new Runnable() {
+            @Override
+            public void run() {
+                Product.fromCsv("P001,Name,GROCERY,50.00,10,5,EXTRA");
+            }
+        });
         rejects("Reject invalid price in CSV",
-                () -> Product.fromCsv("P001,Name,GROCERY,abc,10,5"));
+                new Runnable() {
+            @Override
+            public void run() {
+                Product.fromCsv("P001,Name,GROCERY,abc,10,5");
+            }
+        });
         rejects("Reject invalid quantity in CSV",
-                () -> Product.fromCsv("P001,Name,GROCERY,50.00,notanumber,5"));
+                new Runnable() {
+            @Override
+            public void run() {
+                Product.fromCsv("P001,Name,GROCERY,50.00,notanumber,5");
+            }
+        });
         rejects("Reject invalid reorder level in CSV",
-                () -> Product.fromCsv("P001,Name,GROCERY,50.00,10,xyz"));
+                new Runnable() {
+            @Override
+            public void run() {
+                Product.fromCsv("P001,Name,GROCERY,50.00,10,xyz");
+            }
+        });
         rejects("Reject unknown category in CSV",
-                () -> Product.fromCsv("P001,Name,FURNITURE,50.00,10,5"));
+                new Runnable() {
+            @Override
+            public void run() {
+                Product.fromCsv("P001,Name,FURNITURE,50.00,10,5");
+            }
+        });
     }
 
     private static void testCategoryTaxRates() {

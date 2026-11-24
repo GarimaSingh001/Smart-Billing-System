@@ -40,13 +40,18 @@ public class SalesReport {
         Map<String, Integer> units = new HashMap<>();
         for (Bill b : bills) {
             for (CartItem item : b.getItems()) {
-                units.merge(item.getProduct().getName(), item.getQuantity(), Integer::sum);
+                String name = item.getProduct().getName();
+                Integer count = units.get(name);
+                units.put(name, (count == null ? 0 : count) + item.getQuantity());
             }
         }
         List<Map.Entry<String, Integer>> list = new ArrayList<>(units.entrySet());
-        list.sort((a, b) -> {
-            int byUnits = Integer.compare(b.getValue(), a.getValue());
-            return byUnits != 0 ? byUnits : a.getKey().compareTo(b.getKey());
+        list.sort(new java.util.Comparator<Map.Entry<String, Integer>>() {
+            @Override
+            public int compare(Map.Entry<String, Integer> a, Map.Entry<String, Integer> b) {
+                int byUnits = Integer.compare(b.getValue(), a.getValue());
+                return byUnits != 0 ? byUnits : a.getKey().compareTo(b.getKey());
+            }
         });
         return new ArrayList<>(list.subList(0, Math.min(Math.max(topN, 0), list.size())));
     }
@@ -55,9 +60,13 @@ public class SalesReport {
     public Map<LocalDate, BigDecimal> getSalesPerDay() {
         Map<LocalDate, BigDecimal> perDay = new TreeMap<>();
         for (Bill b : bills) {
-            perDay.merge(b.getDateTime().toLocalDate(), b.getTotal(), BigDecimal::add);
+            LocalDate day = b.getDateTime().toLocalDate();
+            BigDecimal previous = perDay.get(day);
+            perDay.put(day, previous == null ? b.getTotal() : previous.add(b.getTotal()));
         }
-        perDay.replaceAll((day, amount) -> amount.setScale(2, RoundingMode.HALF_UP));
+        for (Map.Entry<LocalDate, BigDecimal> entry : perDay.entrySet()) {
+            entry.setValue(entry.getValue().setScale(2, RoundingMode.HALF_UP));
+        }
         return perDay;
     }
 

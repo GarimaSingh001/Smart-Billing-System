@@ -15,30 +15,42 @@ import payment.Payment;
 
 /** Single-process checkout over the shared inventory products. */
 public final class BillingService {
-    private final java.util.function.Supplier<? extends Collection<Product>> products;
+    private final Collection<Product> products;
+    private final util.Inventory inventory;
     private final PricingService pricing = new PricingService();
     private int lastInvoiceNumber;
     private repository.BillRepository billRepository;
 
     /** Uses shared Product objects and the highest invoice number loaded from disk. */
     public BillingService(Collection<Product> products, int lastInvoiceNumber) {
-        this(() -> products, lastInvoiceNumber);
-        java.util.Objects.requireNonNull(products, "Missing inventory");
-    }
-
-    /** Queries current inventory on each checkout, including newly added products. */
-    public BillingService(java.util.function.Supplier<? extends Collection<Product>> products, int lastInvoiceNumber) {
         if (products == null || lastInvoiceNumber < 0) {
             throw new IllegalArgumentException("Invalid inventory or invoice counter.");
         }
         this.products = products;
+        this.inventory = null;
+        this.lastInvoiceNumber = lastInvoiceNumber;
+    }
+
+    /** Uses the team's inventory directly, including products added after construction. */
+    public BillingService(util.Inventory inventory, int lastInvoiceNumber) {
+        if (inventory == null || lastInvoiceNumber < 0) {
+            throw new IllegalArgumentException("Invalid inventory or invoice counter.");
+        }
+        this.inventory = inventory;
+        this.products = null;
         this.lastInvoiceNumber = lastInvoiceNumber;
     }
 
     /** Saves completed invoices before confirming checkout to the caller. */
-    public BillingService(java.util.function.Supplier<? extends Collection<Product>> products,
+    public BillingService(Collection<Product> products,
                           int lastInvoiceNumber, repository.BillRepository billRepository) {
         this(products, lastInvoiceNumber);
+        this.billRepository = java.util.Objects.requireNonNull(billRepository);
+    }
+
+    /** Saves invoices while reading current products from the team's inventory. */
+    public BillingService(util.Inventory inventory, int lastInvoiceNumber, repository.BillRepository billRepository) {
+        this(inventory, lastInvoiceNumber);
         this.billRepository = java.util.Objects.requireNonNull(billRepository);
     }
 
@@ -82,8 +94,10 @@ public final class BillingService {
                 if (!billRepository.getWarnings().isEmpty()) {
                     throw new java.io.IOException("Invoice history contains malformed rows; repair it before checkout.");
                 }
-                if (saved.stream().anyMatch(existing -> existing.getInvoiceNo().equals(bill.getInvoiceNo()))) {
-                    throw new java.io.IOException("Invoice number already exists; reload invoice history.");
+                for (Bill existing : saved) {
+                    if (existing.getInvoiceNo().equals(bill.getInvoiceNo())) {
+                        throw new java.io.IOException("Invoice number already exists; reload invoice history.");
+                    }
                 }
                 saved.add(bill);
                 billRepository.saveAll(saved);
@@ -101,7 +115,8 @@ public final class BillingService {
     }
 
     private Product find(String id) throws InvalidInputException {
-        for (Product p : products.get()) {
+        Collection<Product> currentProducts = inventory == null ? products : inventory.getAll();
+        for (Product p : currentProducts) {
             if (p.getProductId().equalsIgnoreCase(id)) { return p; }
         }
         throw new InvalidInputException("Product no longer exists: " + id);

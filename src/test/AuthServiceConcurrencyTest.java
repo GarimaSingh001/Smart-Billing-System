@@ -4,7 +4,6 @@ import static test.TestSupport.check;
 import static test.TestSupport.section;
 
 import exception.AuthenticationException;
-import java.util.concurrent.atomic.AtomicInteger;
 import service.AuditLog;
 import service.AuthService;
 
@@ -21,24 +20,27 @@ public class AuthServiceConcurrencyTest {
     public static void run() throws InterruptedException {
         section("AuthServiceConcurrencyTest (" + THREADS + " threads)");
         AuthService auth = new AuthService(AuthService.demoUsers(), new AuditLog(500));
-        AtomicInteger attemptsLeftMessages = new AtomicInteger();
-        AtomicInteger nowLockedMessages = new AtomicInteger();
-        AtomicInteger alreadyLockedMessages = new AtomicInteger();
+        Counter attemptsLeftMessages = new Counter();
+        Counter nowLockedMessages = new Counter();
+        Counter alreadyLockedMessages = new Counter();
 
         Thread[] workers = new Thread[THREADS];
         for (int i = 0; i < THREADS; i++) {
-            workers[i] = new Thread(() -> {
+            workers[i] = new Thread(new Runnable() {
+                @Override
+                public void run() {
                 try {
                     auth.login("cashier", "wrong-password");
                 } catch (AuthenticationException e) {
                     String message = e.getMessage();
                     if (message.contains("attempt(s) left")) {
-                        attemptsLeftMessages.incrementAndGet();
+                        attemptsLeftMessages.increment();
                     } else if (message.contains("is now locked")) {
-                        nowLockedMessages.incrementAndGet();
+                        nowLockedMessages.increment();
                     } else if (message.contains("is locked after")) {
-                        alreadyLockedMessages.incrementAndGet();
+                        alreadyLockedMessages.increment();
                     }
+                }
                 }
             }, "attacker-" + i);
         }
@@ -59,5 +61,14 @@ public class AuthServiceConcurrencyTest {
     public static void main(String[] args) throws InterruptedException {
         run();
         TestSupport.finish();
+    }
+
+    /** A synchronized counter demonstrates the shared-data rule from lectures 30-31. */
+    private static class Counter {
+        private int value;
+
+        public synchronized void increment() { value++; }
+
+        public synchronized int get() { return value; }
     }
 }

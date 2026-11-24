@@ -5,7 +5,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.Scanner;
 import util.SessionMonitor;
 
@@ -82,40 +81,40 @@ public class ConsoleInput {
     public BigDecimal readMoney(String prompt) {
         while (true) {
             String line = readLine(prompt);
-            Optional<BigDecimal> parsed = parseMoney(line);
-            if (parsed.isPresent()) {
-                return parsed.get();
-            }
-            System.out.println("[ERROR] '" + line + "' is not a valid amount (example: 49.50).");
-        }
-    }
-
-    /** Reads an optional money amount; a blank line means "keep the current value" and returns empty. */
-    public Optional<BigDecimal> readOptionalMoney(String prompt) {
-        while (true) {
-            String line = readLine(prompt);
-            if (line.isEmpty()) {
-                return Optional.empty();
-            }
-            Optional<BigDecimal> parsed = parseMoney(line);
-            if (parsed.isPresent()) {
+            BigDecimal parsed = parseMoney(line);
+            if (parsed != null) {
                 return parsed;
             }
             System.out.println("[ERROR] '" + line + "' is not a valid amount (example: 49.50).");
         }
     }
 
-    /** Reads an optional whole number; a blank line means "keep the current value" and returns empty. */
-    public Optional<Integer> readOptionalInt(String prompt, int min, int max) {
+    /** Reads an optional money amount; a blank line means "keep the current value" and returns null. */
+    public BigDecimal readOptionalMoney(String prompt) {
         while (true) {
             String line = readLine(prompt);
             if (line.isEmpty()) {
-                return Optional.empty();
+                return null;
+            }
+            BigDecimal parsed = parseMoney(line);
+            if (parsed != null) {
+                return parsed;
+            }
+            System.out.println("[ERROR] '" + line + "' is not a valid amount (example: 49.50).");
+        }
+    }
+
+    /** Reads an optional whole number; a blank line means "keep the current value" and returns null. */
+    public Integer readOptionalInt(String prompt, int min, int max) {
+        while (true) {
+            String line = readLine(prompt);
+            if (line.isEmpty()) {
+                return null;
             }
             try {
                 int value = Integer.parseInt(line);
                 if (value >= min && value <= max) {
-                    return Optional.of(value);
+                    return Integer.valueOf(value);
                 }
                 System.out.println("[ERROR] Please enter a number between " + min + " and " + max + ".");
             } catch (NumberFormatException e) {
@@ -176,15 +175,15 @@ public class ConsoleInput {
         }
     }
 
-    private static Optional<BigDecimal> parseMoney(String text) {
+    private static BigDecimal parseMoney(String text) {
         try {
             BigDecimal value = new BigDecimal(text);
             if (value.signum() < 0) {
-                return Optional.empty();
+                return null;
             }
-            return Optional.of(value.setScale(2, RoundingMode.HALF_UP));
+            return value.setScale(2, RoundingMode.HALF_UP);
         } catch (NumberFormatException e) {
-            return Optional.empty();
+            return null;
         }
     }
 }

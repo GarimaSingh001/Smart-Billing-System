@@ -40,7 +40,12 @@ public class SessionMonitorTest {
         check("stop() interrupts and joins the thread", stopped.getThreadState() == Thread.State.TERMINATED);
         check("a stopped session did not expire", !stopped.isExpired());
 
-        expectThrows("zero timeout rejected", IllegalArgumentException.class, () -> new SessionMonitor(0, 10));
+        expectThrows("zero timeout rejected", IllegalArgumentException.class, new TestSupport.Block() {
+            @Override
+            public void run() throws Exception {
+                new SessionMonitor(0, 10);
+            }
+        });
     }
 
     /** Standalone entry point. */

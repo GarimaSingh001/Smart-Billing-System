@@ -24,16 +24,61 @@ public class CouponTest {
         check(save10.getCode().equals("SAVE10"), "Normalized code");
         check(service.findActive(" SaVe10 ") == save10, "Case-insensitive lookup");
         money("100.00", save10.apply(new BigDecimal("1000")));
-        rejects(() -> service.addCoupon(new Coupon("SAVE10", true, new FixedDiscount(BigDecimal.ONE))));
+        rejects(new Attempt() {
+            @Override
+            public void run() throws Exception {
+                service.addCoupon(new Coupon("SAVE10", true, new FixedDiscount(BigDecimal.ONE)));
+            }
+        });
         check(service.findActive("SAVE10") == save10, "Duplicate preserves original");
-        rejects(() -> service.addCoupon(null));
-        rejects(() -> service.findActive(null));
-        rejects(() -> service.findActive(" "));
-        rejects(() -> service.findActive("missing"));
-        rejects(() -> new Coupon("bad code", true, new FixedDiscount(BigDecimal.ONE)));
-        rejects(() -> new Coupon(null, true, new FixedDiscount(BigDecimal.ONE)));
-        rejects(() -> new Coupon("X", true, null));
-        rejects(() -> new Coupon("X", true, save10));
+        rejects(new Attempt() {
+            @Override
+            public void run() throws Exception {
+                service.addCoupon(null);
+            }
+        });
+        rejects(new Attempt() {
+            @Override
+            public void run() throws Exception {
+                service.findActive(null);
+            }
+        });
+        rejects(new Attempt() {
+            @Override
+            public void run() throws Exception {
+                service.findActive(" ");
+            }
+        });
+        rejects(new Attempt() {
+            @Override
+            public void run() throws Exception {
+                service.findActive("missing");
+            }
+        });
+        rejects(new Attempt() {
+            @Override
+            public void run() throws Exception {
+                new Coupon("bad code", true, new FixedDiscount(BigDecimal.ONE));
+            }
+        });
+        rejects(new Attempt() {
+            @Override
+            public void run() throws Exception {
+                new Coupon(null, true, new FixedDiscount(BigDecimal.ONE));
+            }
+        });
+        rejects(new Attempt() {
+            @Override
+            public void run() throws Exception {
+                new Coupon("X", true, null);
+            }
+        });
+        rejects(new Attempt() {
+            @Override
+            public void run() throws Exception {
+                new Coupon("X", true, save10);
+            }
+        });
 
         Coupon fixed = new Coupon("LESS50", true, new FixedDiscount(new BigDecimal("50")));
         service.addCoupon(fixed);
@@ -43,9 +88,24 @@ public class CouponTest {
         catch (UnsupportedOperationException expected) { checks++; }
         service.deactivate("save10");
         check(!save10.isActive(), "Deactivate updates existing reference");
-        rejects(() -> service.findActive("SAVE10"));
-        rejects(() -> save10.apply(new BigDecimal("1000")));
-        rejects(() -> service.deactivate("missing"));
+        rejects(new Attempt() {
+            @Override
+            public void run() throws Exception {
+                service.findActive("SAVE10");
+            }
+        });
+        rejects(new Attempt() {
+            @Override
+            public void run() throws Exception {
+                save10.apply(new BigDecimal("1000"));
+            }
+        });
+        rejects(new Attempt() {
+            @Override
+            public void run() throws Exception {
+                service.deactivate("missing");
+            }
+        });
         save10.setActive(true);
 
         Product milk = new Product("P1", "Milk", Category.DAIRY, new BigDecimal("500"), 10, 2);
@@ -58,7 +118,12 @@ public class CouponTest {
         cart.addItem(milk, 1);
         Coupon selected = service.findActive("SAVE10");
         service.deactivate("SAVE10");
-        rejects(() -> billing.checkout(cart, "cashier", "WALK-IN", selected, new CashPayment(new BigDecimal("1000"))));
+        rejects(new Attempt() {
+            @Override
+            public void run() throws Exception {
+                billing.checkout(cart, "cashier", "WALK-IN", selected, new CashPayment(new BigDecimal("1000")));
+            }
+        });
         check(milk.getQuantity() == 8 && !cart.isEmpty(), "Inactive coupon leaves stock and cart untouched");
         System.out.println("PASS: " + checks + " coupon and checkout checks.");
     }

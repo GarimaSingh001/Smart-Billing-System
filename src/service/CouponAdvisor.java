@@ -23,7 +23,12 @@ public final class CouponAdvisor {
         for (Coupon coupon : catalogue.getAll()) {
             if (coupon.isActive()) { quotes.add(pricing.quote(items, coupon, coupon.getCode())); }
         }
-        quotes.sort(Comparator.comparing(BillQuote::getTotal));
+        quotes.sort(new Comparator<BillQuote>() {
+            @Override
+            public int compare(BillQuote first, BillQuote second) {
+                return first.getTotal().compareTo(second.getTotal());
+            }
+        });
         return List.copyOf(quotes);
     }
 }

@@ -3,7 +3,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-import java.util.concurrent.atomic.AtomicBoolean;
 import model.Customer;
 import model.Product;
 import model.User;
@@ -33,7 +32,7 @@ public class Main {
     private final Scanner scanner = new Scanner(System.in);
     private final ConsoleInput console = new ConsoleInput(scanner, null);
     private final AuditLog auditLog = new AuditLog(200);
-    private final AtomicBoolean exitSaveDone = new AtomicBoolean(false);
+    private boolean exitSaveDone;
 
     private final UserRepository userRepository = new UserRepository();
     private final ProductRepository productRepository = new ProductRepository();
@@ -54,7 +53,10 @@ public class Main {
 
     private void run() {
         // The hook also saves data when the window is closed or the user presses Ctrl+C.
-        Runtime.getRuntime().addShutdownHook(new Thread(this::saveOnExit, "save-on-exit"));
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            @Override
+            public void run() { saveOnExit(); }
+        }, "save-on-exit"));
         try {
             loadData();
             loginLoop();
@@ -87,7 +89,7 @@ public class Main {
         productService = new ProductService(inventory);
         inventoryService = new InventoryService(inventory);
         customerService = new CustomerService(customers);
-        billingService = new BillingService(() -> inventory.getAll(), billRepository.getLastInvoiceNumber(), billRepository);
+        billingService = new BillingService(inventory, billRepository.getLastInvoiceNumber(), billRepository);
         System.out.printf("[INFO] Loaded %d user(s), %d product(s), %d customer(s).%n",
                 users.size(), products.size(), customers.size());
     }
@@ -161,12 +163,13 @@ public class Main {
     }
 
     private MenuHandler createMenu(User user, SessionMonitor monitor) {
-        return switch (user.getRole()) {
-            case ADMIN -> new AdminMenu(scanner, user, monitor, authService, productService,
+        switch (user.getRole()) {
+            case ADMIN: return new AdminMenu(scanner, user, monitor, authService, productService,
                     inventoryService, billRepository, auditLog);
-            case CASHIER -> new CashierMenu(scanner, user, monitor, productService, inventoryService,
+            case CASHIER: return new CashierMenu(scanner, user, monitor, productService, inventoryService,
                     billingService, customerService, billRepository, auditLog);
-        };
+            default: throw new IllegalArgumentException("Unsupported role");
+        }
     }
 
     // ------------------------------------------------------------------ saving
@@ -176,8 +179,9 @@ public class Main {
         saveAll(false);
     }
 
-    private void saveOnExit() {
-        if (exitSaveDone.compareAndSet(false, true)) {
+    private synchronized void saveOnExit() {
+        if (!exitSaveDone) {
+            exitSaveDone = true;
             saveAll(true);
         }
     }

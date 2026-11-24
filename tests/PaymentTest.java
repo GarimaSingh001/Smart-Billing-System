@@ -32,8 +32,18 @@ public class PaymentTest {
         CashPayment rounded = new CashPayment(new BigDecimal("1.005"));
         check(rounded.pay(new BigDecimal("1.004")), "HALF_UP rounding");
         money("0.01", rounded.getChange());
-        rejects(() -> new CashPayment(null));
-        rejects(() -> new CashPayment(new BigDecimal("-0.001")));
+        rejects(new Runnable() {
+            @Override
+            public void run() {
+                new CashPayment(null);
+            }
+        });
+        rejects(new Runnable() {
+            @Override
+            public void run() {
+                new CashPayment(new BigDecimal("-0.001"));
+            }
+        });
 
         method = new UpiPayment(" shopper@demo ");
         check(method.pay(new BigDecimal("945.00")), "Simulated UPI success");

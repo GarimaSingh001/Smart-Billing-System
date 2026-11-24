@@ -73,10 +73,11 @@ public abstract class User implements Comparable<User> {
     /** Factory that returns the correct subclass for the given role (polymorphism). */
     public static User create(String userId, String username, String passwordHash, Role role) {
         Objects.requireNonNull(role, "Role must not be null");
-        return switch (role) {
-            case ADMIN -> new Admin(userId, username, passwordHash);
-            case CASHIER -> new Cashier(userId, username, passwordHash);
-        };
+        switch (role) {
+            case ADMIN: return new Admin(userId, username, passwordHash);
+            case CASHIER: return new Cashier(userId, username, passwordHash);
+            default: throw new IllegalArgumentException("Unsupported role");
+        }
     }
 
     /** Orders users by role first and then by username, ignoring case. */
@@ -92,9 +93,10 @@ public abstract class User implements Comparable<User> {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof User other)) {
+        if (!(o instanceof User)) {
             return false;
         }
+        User other = (User) o;
         return username.equalsIgnoreCase(other.username);
     }
 

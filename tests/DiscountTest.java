@@ -26,15 +26,60 @@ public class DiscountTest {
         expect("0.00", new FixedDiscount(BigDecimal.ZERO).apply(new BigDecimal("10")));
         expect("1.01", new FixedDiscount(new BigDecimal("1.005")).apply(new BigDecimal("10")));
 
-        rejects(() -> new PercentageDiscount(null));
-        rejects(() -> new PercentageDiscount(new BigDecimal("-1")));
-        rejects(() -> new PercentageDiscount(new BigDecimal("100.01")));
-        rejects(() -> new FixedDiscount(null));
-        rejects(() -> new FixedDiscount(new BigDecimal("-0.001")));
-        rejects(() -> percentage.apply(null));
-        rejects(() -> percentage.apply(new BigDecimal("-0.001")));
-        rejects(() -> fixed.apply(null));
-        rejects(() -> fixed.apply(new BigDecimal("-0.001")));
+        rejects(new Runnable() {
+            @Override
+            public void run() {
+                new PercentageDiscount(null);
+            }
+        });
+        rejects(new Runnable() {
+            @Override
+            public void run() {
+                new PercentageDiscount(new BigDecimal("-1"));
+            }
+        });
+        rejects(new Runnable() {
+            @Override
+            public void run() {
+                new PercentageDiscount(new BigDecimal("100.01"));
+            }
+        });
+        rejects(new Runnable() {
+            @Override
+            public void run() {
+                new FixedDiscount(null);
+            }
+        });
+        rejects(new Runnable() {
+            @Override
+            public void run() {
+                new FixedDiscount(new BigDecimal("-0.001"));
+            }
+        });
+        rejects(new Runnable() {
+            @Override
+            public void run() {
+                percentage.apply(null);
+            }
+        });
+        rejects(new Runnable() {
+            @Override
+            public void run() {
+                percentage.apply(new BigDecimal("-0.001"));
+            }
+        });
+        rejects(new Runnable() {
+            @Override
+            public void run() {
+                fixed.apply(null);
+            }
+        });
+        rejects(new Runnable() {
+            @Override
+            public void run() {
+                fixed.apply(new BigDecimal("-0.001"));
+            }
+        });
 
         System.out.println("10% discount on 1000.00 = " + percentage.apply(new BigDecimal("1000")));
         System.out.println("Fixed discount of 50.00 on 20.00 = " + fixed.apply(new BigDecimal("20")));

@@ -10,7 +10,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import model.Admin;
 import model.Cashier;
@@ -67,7 +66,9 @@ public class AuthService {
                     + MAX_FAILED_ATTEMPTS + " failed attempts. Ask an administrator to unlock it.");
         }
         if (!user.checkPassword(password)) {
-            int failures = failedAttempts.merge(key, 1, Integer::sum);
+            Integer previous = failedAttempts.get(key);
+            int failures = previous == null ? 1 : previous + 1;
+            failedAttempts.put(key, failures);
             auditLog.record(key, "Login failed (" + failures + "/" + MAX_FAILED_ATTEMPTS + ")");
             if (failures >= MAX_FAILED_ATTEMPTS) {
                 lockedUsers.add(key);
@@ -163,9 +164,9 @@ public class AuthService {
         return lockedUsers.contains(key(username));
     }
 
-    /** Finds a user by username, ignoring case. */
-    public synchronized Optional<User> findByUsername(String username) {
-        return Optional.ofNullable(users.get(key(username)));
+    /** Finds a user by username, ignoring case, or returns null when absent. */
+    public synchronized User findByUsername(String username) {
+        return users.get(key(username));
     }
 
     /** Returns a read-only list of all users sorted by role and username. */

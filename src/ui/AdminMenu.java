@@ -81,13 +81,14 @@ public class AdminMenu extends MenuHandler {
         while (running) {
             printMenu(currentUser.getMenuTitle(), MAIN_OPTIONS);
             switch (readChoice(1, MAIN_OPTIONS.length)) {
-                case 1 -> manageProducts();
-                case 2 -> manageInventory();
-                case 3 -> execute(this::viewSalesReports);
-                case 4 -> manageUsers();
-                default -> {
+                case 1: manageProducts(); break;
+                case 2: manageInventory(); break;
+                case 3: execute(new MenuAction() { public void run() throws Exception { viewSalesReports(); } }); break;
+                case 4: manageUsers(); break;
+                default: {
                     auditLog.record(currentUser.getUsername(), "Logout");
                     running = false;
+                break;
                 }
             }
         }
@@ -101,12 +102,12 @@ public class AdminMenu extends MenuHandler {
         while (!back) {
             printMenu("Manage Products", PRODUCT_OPTIONS);
             switch (readChoice(1, PRODUCT_OPTIONS.length)) {
-                case 1 -> execute(this::addProduct);
-                case 2 -> execute(this::viewAllProducts);
-                case 3 -> execute(this::searchProducts);
-                case 4 -> execute(this::updateProduct);
-                case 5 -> execute(this::deleteProduct);
-                default -> back = true;
+                case 1: execute(new MenuAction() { public void run() throws Exception { addProduct(); } }); break;
+                case 2: execute(new MenuAction() { public void run() throws Exception { viewAllProducts(); } }); break;
+                case 3: execute(new MenuAction() { public void run() throws Exception { searchProducts(); } }); break;
+                case 4: execute(new MenuAction() { public void run() throws Exception { updateProduct(); } }); break;
+                case 5: execute(new MenuAction() { public void run() throws Exception { deleteProduct(); } }); break;
+                default: back = true; break;
             }
         }
         leave();
@@ -126,11 +127,12 @@ public class AdminMenu extends MenuHandler {
 
     private void viewAllProducts() {
         System.out.println("Sort by: 1) Name  2) Price (low to high)  3) Stock (low to high)");
-        Comparator<Product> order = switch (input.readInt("Sort option [1-3]: ", 1, 3)) {
-            case 2 -> ProductComparators.BY_PRICE;
-            case 3 -> ProductComparators.BY_STOCK;
-            default -> ProductComparators.BY_NAME;
-        };
+        Comparator<Product> order;
+        switch (input.readInt("Sort option [1-3]: ", 1, 3)) {
+            case 2: order = ProductComparators.BY_PRICE; break;
+            case 3: order = ProductComparators.BY_STOCK; break;
+            default: order = ProductComparators.BY_NAME; break;
+        }
         printProducts(productService.listSorted(order));
     }
 
@@ -147,10 +149,11 @@ public class AdminMenu extends MenuHandler {
     private void updateProduct() throws Exception {
         Product current = productService.searchById(input.readNonBlank("Product ID to update: ").toUpperCase());
         printProducts(List.of(current));
-        BigDecimal price = input.readOptionalMoney("New price (blank = keep " + current.getPrice() + "): ")
-                .orElse(current.getPrice());
-        int quantity = input.readOptionalInt("New quantity (blank = keep " + current.getQuantity() + "): ",
-                0, 1_000_000).orElse(current.getQuantity());
+        BigDecimal price = input.readOptionalMoney("New price (blank = keep " + current.getPrice() + "): ");
+        if (price == null) { price = current.getPrice(); }
+        Integer quantity = input.readOptionalInt("New quantity (blank = keep " + current.getQuantity() + "): ",
+                0, 1_000_000);
+        if (quantity == null) { quantity = current.getQuantity(); }
         productService.updateProduct(current.getProductId(), price, quantity);
         auditLog.record(currentUser.getUsername(), "Product updated: " + current.getProductId());
         success("Product " + current.getProductId() + " updated.");
@@ -198,10 +201,10 @@ public class AdminMenu extends MenuHandler {
         while (!back) {
             printMenu("Manage Inventory", INVENTORY_OPTIONS);
             switch (readChoice(1, INVENTORY_OPTIONS.length)) {
-                case 1 -> execute(this::receiveStock);
-                case 2 -> execute(() -> printLowStock());
-                case 3 -> execute(this::checkAvailability);
-                default -> back = true;
+                case 1: execute(new MenuAction() { public void run() throws Exception { receiveStock(); } }); break;
+                case 2: execute(new MenuAction() { public void run() throws Exception { printLowStock(); } }); break;
+                case 3: execute(new MenuAction() { public void run() throws Exception { checkAvailability(); } }); break;
+                default: back = true; break;
             }
         }
         leave();
@@ -271,14 +274,14 @@ public class AdminMenu extends MenuHandler {
         while (!back) {
             printMenu("Manage Users", USER_OPTIONS);
             switch (readChoice(1, USER_OPTIONS.length)) {
-                case 1 -> execute(this::listUsers);
-                case 2 -> execute(this::addUser);
-                case 3 -> execute(this::deleteUser);
-                case 4 -> execute(this::resetPassword);
-                case 5 -> execute(this::unlockAccount);
-                case 6 -> execute(this::changeOwnPassword);
-                case 7 -> execute(this::showAuditLog);
-                default -> back = true;
+                case 1: execute(new MenuAction() { public void run() throws Exception { listUsers(); } }); break;
+                case 2: execute(new MenuAction() { public void run() throws Exception { addUser(); } }); break;
+                case 3: execute(new MenuAction() { public void run() throws Exception { deleteUser(); } }); break;
+                case 4: execute(new MenuAction() { public void run() throws Exception { resetPassword(); } }); break;
+                case 5: execute(new MenuAction() { public void run() throws Exception { unlockAccount(); } }); break;
+                case 6: execute(new MenuAction() { public void run() throws Exception { changeOwnPassword(); } }); break;
+                case 7: execute(new MenuAction() { public void run() throws Exception { showAuditLog(); } }); break;
+                default: back = true; break;
             }
         }
         leave();
@@ -345,6 +348,6 @@ public class AdminMenu extends MenuHandler {
         if (entries.isEmpty()) {
             info("The audit log is empty.");
         }
-        entries.forEach(System.out::println);
+        for (String entry : entries) { System.out.println(entry); }
     }
 }

@@ -1,9 +1,15 @@
 
 # Smart-Billing-System
 
+**Current syllabus limit: lectures 1-31 (Continuous Evaluation 2).** Java source
+and tests use loops, explicit interface implementations and synchronized methods;
+no lambdas, streams, method references, wait/notify or JDBC. CSV is retained by
+agreement. See `docs/lecture-31-scope.md` for the concept map and supporting APIs.
+Run `tests/check-syllabus.ps1` for the source scan.
+
 **24 Nov integration status:** Member C's cart, invoice, tax and checkout modules
 are implemented and tested with the real product and repository classes. The full
-console build still needs Member B's `Inventory`, `InventoryService`,
+console build still needs Member B's `InventoryService`,
 `ProductService` and `ProductComparators`. Run `tests/run-billing.ps1` in PowerShell
 to test the available modules; see `docs/member-c-progress.md` for limits and details.
 

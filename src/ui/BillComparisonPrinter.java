@@ -18,7 +18,10 @@ public final class BillComparisonPrinter {
         for (BillQuote q : quotes) {
             result.append(String.format("%-32s %12s %12s %12s%n", q.getOption(), q.getDiscount(), q.getTax(), q.getTotal()));
         }
-        BillQuote best = quotes.stream().min(java.util.Comparator.comparing(BillQuote::getTotal)).orElseThrow();
+        BillQuote best = quotes.get(0);
+        for (BillQuote candidate : quotes) {
+            if (candidate.getTotal().compareTo(best.getTotal()) < 0) { best = candidate; }
+        }
         result.append("Lowest total: ").append(best.getOption()).append(" - Rs ").append(best.getTotal()).append('\n');
         result.append("Estimate only: no coupon applied, payment taken or stock reserved. Checkout rechecks prices and stock.\n");
         return result.toString();

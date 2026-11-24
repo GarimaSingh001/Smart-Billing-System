@@ -24,7 +24,12 @@ public class PasswordUtilTest {
         check("policy accepts 6 characters", PasswordUtil.isAcceptable("abc123"));
         check("policy rejects 5 characters", !PasswordUtil.isAcceptable("abc12"));
         check("policy rejects blank", !PasswordUtil.isAcceptable("      "));
-        expectThrows("hash(null) is rejected", IllegalArgumentException.class, () -> PasswordUtil.hash(null));
+        expectThrows("hash(null) is rejected", IllegalArgumentException.class, new TestSupport.Block() {
+            @Override
+            public void run() throws Exception {
+                PasswordUtil.hash(null);
+            }
+        });
     }
 
     /** Standalone entry point. */

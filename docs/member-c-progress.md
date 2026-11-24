@@ -191,3 +191,14 @@ agreement. Existing tests still pass.
 Example: a 1000.00 dairy subtotal gives 1050.00 without a coupon, 997.50 with
 LESS50 and 945.00 with SAVE10. This is a concrete demonstration of interfaces,
 composition, BigDecimal, immutable data and Comparator, not an AI prediction.
+
+### Syllabus correction: through lecture 31 only (24 November)
+
+The current implementation supersedes earlier notes about lambdas, streams and
+Supplier. Replaced them with ordinary loops and interface implementations in
+production code AND tests. Atomic helpers now use synchronized fields. Optional,
+pattern matching, var and arrow switches were simplified too. The latest teammate
+Inventory code was pulled and connected directly to BillingService. CSV and exact
+money calculations are retained. See lecture-31-scope.md for the complete map.
+Only InventoryService, ProductService and ProductComparators remain missing from
+the full menu build; the real Inventory and its tests are now included.

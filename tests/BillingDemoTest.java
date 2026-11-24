@@ -28,9 +28,9 @@ public class BillingDemoTest {
         check(products.loadAll().get(0).getQuantity() == 7, "Failed sales preserve stock");
         run(directory, "1\n\n2\n");
         check(bills.loadAll().size() == 2, "Empty cart creates no invoice");
-        var coupons = CouponMenu.demoCatalogue(); coupons.deactivate("SAVE10");
+        service.CouponService coupons = CouponMenu.demoCatalogue(); coupons.deactivate("SAVE10");
         try (Scanner scanner = new Scanner("SAVE10\n\n")) {
-            var discount = CouponMenu.choose(new ConsoleInput(scanner, null), coupons);
+            payment.Discount discount = CouponMenu.choose(new ConsoleInput(scanner, null), coupons);
             check(discount.apply(BigDecimal.TEN).equals(new BigDecimal("0.00")), "Inactive coupon can be cancelled");
         }
         System.out.println("PASS: 9 interactive demo and restart checks.");

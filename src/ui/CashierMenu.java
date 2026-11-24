@@ -75,12 +75,13 @@ public class CashierMenu extends MenuHandler {
         while (running) {
             printMenu(currentUser.getMenuTitle(), MAIN_OPTIONS);
             switch (readChoice(1, MAIN_OPTIONS.length)) {
-                case 1 -> createNewBill();
-                case 2 -> execute(this::searchProduct);
-                case 3 -> execute(this::viewRecentBills);
-                default -> {
+                case 1: createNewBill(); break;
+                case 2: execute(new MenuAction() { public void run() throws Exception { searchProduct(); } }); break;
+                case 3: execute(new MenuAction() { public void run() throws Exception { viewRecentBills(); } }); break;
+                default: {
                     auditLog.record(currentUser.getUsername(), "Logout");
                     running = false;
+                break;
                 }
             }
         }
@@ -96,19 +97,21 @@ public class CashierMenu extends MenuHandler {
             printCart(cart);
             printMenu("New Bill", BILL_OPTIONS);
             switch (readChoice(1, BILL_OPTIONS.length)) {
-                case 1 -> execute(() -> addItem(cart));
-                case 2 -> execute(() -> changeQuantity(cart));
-                case 3 -> execute(() -> removeItem(cart));
-                case 4 -> {
+                case 1: execute(new MenuAction() { public void run() throws Exception { addItem(cart); } }); break;
+                case 2: execute(new MenuAction() { public void run() throws Exception { changeQuantity(cart); } }); break;
+                case 3: execute(new MenuAction() { public void run() throws Exception { removeItem(cart); } }); break;
+                case 4: {
                     boolean[] billed = {false};
-                    execute(() -> billed[0] = checkout(cart));
+                    execute(new MenuAction() { public void run() throws Exception { billed[0] = checkout(cart); } });
                     finished = billed[0];
+                break;
                 }
-                default -> {
+                default: {
                     if (cart.isEmpty() || confirm("Discard this bill?")) {
                         info("Bill cancelled. No stock was changed.");
                         finished = true;
                     }
+                break;
                 }
             }
         }
@@ -160,8 +163,11 @@ public class CashierMenu extends MenuHandler {
         }
         auditLog.record(currentUser.getUsername(), "Bill " + bill.getInvoiceNo() + " total " + bill.getTotal());
         InvoicePrinter.print(bill);
-        if (payment instanceof CashPayment cash && cash.getChange().signum() > 0) {
-            System.out.println("Change to return: Rs " + cash.getChange().toPlainString());
+        if (payment instanceof CashPayment) {
+            CashPayment cash = (CashPayment) payment;
+            if (cash.getChange().signum() > 0) {
+                System.out.println("Change to return: Rs " + cash.getChange().toPlainString());
+            }
         }
         cart.clear();
         return true;
@@ -187,15 +193,15 @@ public class CashierMenu extends MenuHandler {
 
     private Discount chooseDiscount() {
         System.out.println("Discount: 1) None  2) Percentage  3) Fixed amount  4) Demo coupon");
-        return switch (input.readInt("Option [1-4]: ", 1, 4)) {
-            case 2 -> new PercentageDiscount(input.readMoney("Discount percent: "));
-            case 3 -> new FixedDiscount(input.readMoney("Discount amount (Rs): "));
-            case 4 -> {
+        switch (input.readInt("Option [1-4]: ", 1, 4)) {
+            case 2: return new PercentageDiscount(input.readMoney("Discount percent: "));
+            case 3: return new FixedDiscount(input.readMoney("Discount amount (Rs): "));
+            case 4: {
                 System.out.println("Demo coupons: SAVE10 (10%), LESS50 (Rs 50).");
-                yield CouponMenu.choose(input, CouponMenu.demoCatalogue());
+                return CouponMenu.choose(input, CouponMenu.demoCatalogue());
             }
-            default -> new FixedDiscount(BigDecimal.ZERO.setScale(2));
-        };
+            default: return new FixedDiscount(BigDecimal.ZERO.setScale(2));
+        }
     }
 
     private Payment choosePayment() {
@@ -266,7 +272,12 @@ public class CashierMenu extends MenuHandler {
                 mine.add(bill);
             }
         }
-        mine.sort(Comparator.comparing(Bill::getDateTime).reversed());
+        mine.sort(new Comparator<Bill>() {
+            @Override
+            public int compare(Bill first, Bill second) {
+                return second.getDateTime().compareTo(first.getDateTime());
+            }
+        });
         if (mine.isEmpty()) {
             info("You have not issued any bills yet.");
             return;

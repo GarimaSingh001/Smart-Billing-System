@@ -48,7 +48,7 @@ public final class BillingDemo {
         if (!productRepo.getWarnings().isEmpty() || !billRepo.getWarnings().isEmpty()) {
             throw new IOException("Malformed demo data; repair the files before another sale.");
         }
-        BillingService billing = new BillingService(() -> products, lastInvoice, billRepo);
+        BillingService billing = new BillingService(products, lastInvoice, billRepo);
         while (true) {
             for (Product p : products) {
                 System.out.println(p.getProductId() + " | " + p.getName() + " | Rs " + p.getPrice()
@@ -59,7 +59,10 @@ public final class BillingDemo {
             while (true) {
                 String id = input.readLine("Product ID (blank = finish cart): ");
                 if (id.isEmpty()) { break; }
-                Product product = products.stream().filter(p -> p.getProductId().equalsIgnoreCase(id)).findFirst().orElse(null);
+                Product product = null;
+                for (Product candidate : products) {
+                    if (candidate.getProductId().equalsIgnoreCase(id)) { product = candidate; break; }
+                }
                 if (product == null) { System.out.println("[ERROR] Unknown product."); continue; }
                 try {
                     cart.addItem(product, input.readPositiveInt("Quantity: "));

@@ -36,7 +36,7 @@ public class CouponAdvisorTest {
         check(BillComparisonPrinter.format(quotes).contains("Lowest total: SAVE10 - Rs 945.00"), "Readable recommendation");
         try { quotes.clear(); throw new AssertionError("Mutable result"); }
         catch (UnsupportedOperationException expected) { checks++; }
-        Bill bill = new BillingService(() -> List.of(milk), 0, repository).checkout(cart, "cashier", "C1",
+        Bill bill = new BillingService(List.of(milk), 0, repository).checkout(cart, "cashier", "C1",
                 coupons.findActive("SAVE10"), new CashPayment(new BigDecimal("1000")));
         check(bill.getTotal().equals(quotes.get(0).getTotal()) && bill.getTax().equals(quotes.get(0).getTax()), "Quote matches checkout");
         check(bill.getInvoiceNo().equals("SM-0001"), "Preview does not consume invoice number");
@@ -55,12 +55,51 @@ public class CouponAdvisorTest {
         PricingService pricing = new PricingService();
         BillQuote mixed = pricing.quote(cart.getItems(), new PercentageDiscount(new BigDecimal("10")), "Mixed");
         money("562.50", mixed.getTotal());
-        rejects(() -> advisor.compare(new Cart(), coupons));
-        rejects(() -> advisor.compare(null, coupons));
-        rejects(() -> advisor.compare(cart, null));
-        rejects(() -> pricing.quote(cart.getItems(), amount -> amount.add(BigDecimal.ONE), "Bad"));
-        rejects(() -> pricing.quote(cart.getItems(), amount -> null, "Bad"));
-        rejects(() -> pricing.quote(cart.getItems(), amount -> new BigDecimal("-1"), "Bad"));
+        rejects(new Runnable() {
+            @Override
+            public void run() {
+                advisor.compare(new Cart(), coupons);
+            }
+        });
+        rejects(new Runnable() {
+            @Override
+            public void run() {
+                advisor.compare(null, coupons);
+            }
+        });
+        rejects(new Runnable() {
+            @Override
+            public void run() {
+                advisor.compare(cart, null);
+            }
+        });
+        rejects(new Runnable() {
+            @Override
+            public void run() {
+                pricing.quote(cart.getItems(), new Discount() {
+            @Override
+            public BigDecimal apply(BigDecimal amount) { return amount.add(BigDecimal.ONE); }
+        }, "Bad");
+            }
+        });
+        rejects(new Runnable() {
+            @Override
+            public void run() {
+                pricing.quote(cart.getItems(), new Discount() {
+            @Override
+            public BigDecimal apply(BigDecimal amount) { return null; }
+        }, "Bad");
+            }
+        });
+        rejects(new Runnable() {
+            @Override
+            public void run() {
+                pricing.quote(cart.getItems(), new Discount() {
+            @Override
+            public BigDecimal apply(BigDecimal amount) { return new BigDecimal("-1"); }
+        }, "Bad");
+            }
+        });
         milk.setPrice(new BigDecimal("600"));
         money("562.50", mixed.getTotal());
         money("657.00", pricing.quote(cart.getItems(), new PercentageDiscount(new BigDecimal("10")), "Updated").getTotal());

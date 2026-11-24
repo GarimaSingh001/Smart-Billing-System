@@ -146,9 +146,10 @@ public class Product {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof Product other)) {
+        if (!(o instanceof Product)) {
             return false;
         }
+        Product other = (Product) o;
         return productId.equalsIgnoreCase(other.productId);
     }
 

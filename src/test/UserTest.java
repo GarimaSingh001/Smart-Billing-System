@@ -37,12 +37,32 @@ public class UserTest {
         check("CSV never contains the plain password", !csv.contains("admin123"));
         check("fromCsv builds a Cashier for role CASHIER", User.fromCsv(cashier.toCsv()) instanceof Cashier);
 
-        expectThrows("blank CSV line rejected", IllegalArgumentException.class, () -> User.fromCsv("  "));
-        expectThrows("wrong column count rejected", IllegalArgumentException.class, () -> User.fromCsv("U9,bob"));
+        expectThrows("blank CSV line rejected", IllegalArgumentException.class, new TestSupport.Block() {
+            @Override
+            public void run() throws Exception {
+                User.fromCsv("  ");
+            }
+        });
+        expectThrows("wrong column count rejected", IllegalArgumentException.class, new TestSupport.Block() {
+            @Override
+            public void run() throws Exception {
+                User.fromCsv("U9,bob");
+            }
+        });
         expectThrows("unknown role rejected", IllegalArgumentException.class,
-                () -> User.fromCsv("U9,bob," + PasswordUtil.hash("secret1") + ",MANAGER"));
+                new TestSupport.Block() {
+            @Override
+            public void run() throws Exception {
+                User.fromCsv("U9,bob," + PasswordUtil.hash("secret1") + ",MANAGER");
+            }
+        });
         expectThrows("plain-text password in CSV rejected", IllegalArgumentException.class,
-                () -> User.fromCsv("U9,bob,secret1,CASHIER"));
+                new TestSupport.Block() {
+            @Override
+            public void run() throws Exception {
+                User.fromCsv("U9,bob,secret1,CASHIER");
+            }
+        });
 
         check("users with the same name (any case) are equal", admin.equals(new Admin("U9", "ADMIN", PasswordUtil.hash("x12345"))));
         List<User> users = new ArrayList<>(List.of(cashier, admin, new Cashier("U003", "anil", PasswordUtil.hash("anil123"))));

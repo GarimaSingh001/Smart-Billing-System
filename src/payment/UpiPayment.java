@@ -18,9 +18,13 @@ public final class UpiPayment implements Payment {
             return false;
         }
         int at = upiId.indexOf('@');
-        return at > 0 && at < upiId.length() - 1
-                && at == upiId.lastIndexOf('@')
-                && upiId.codePoints().noneMatch(Character::isWhitespace);
+        if (at <= 0 || at >= upiId.length() - 1 || at != upiId.lastIndexOf('@')) {
+            return false;
+        }
+        for (int i = 0; i < upiId.length(); i++) {
+            if (Character.isWhitespace(upiId.charAt(i))) { return false; }
+        }
+        return true;
     }
 
     /** Returns the invoice payment label; this prototype's UPI is simulated. */
