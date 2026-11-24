@@ -24,7 +24,7 @@ public class Inventory {
         if (product == null) {
             throw new IllegalArgumentException("Product cannot be null.");
         }
-        products.put(product.getProductId(), product);
+        products.put(key(product.getProductId()), product);
     }
 
     /** Finds a product by its ID, throwing ProductNotFoundException if absent. */
@@ -32,7 +32,7 @@ public class Inventory {
         if (id == null || id.isBlank()) {
             throw new ProductNotFoundException(id == null ? "null" : id.trim());
         }
-        Product product = products.get(id.trim());
+        Product product = products.get(key(id));
         if (product == null) {
             throw new ProductNotFoundException(id.trim());
         }
@@ -44,7 +44,7 @@ public class Inventory {
         if (id == null || id.isBlank()) {
             return false;
         }
-        return products.containsKey(id.trim());
+        return products.containsKey(key(id));
     }
 
     /** Returns an independent copy of all products currently in the inventory. */
@@ -71,6 +71,20 @@ public class Inventory {
             throw new InvalidInputException("Quantity to add must be greater than zero, got: " + qty);
         }
         Product product = findById(id);
-        product.setQuantity(product.getQuantity() + qty);
+        long total = (long) product.getQuantity() + qty;
+        if (total > Integer.MAX_VALUE) {
+            throw new InvalidInputException("Stock quantity exceeds the supported limit.");
+        }
+        product.setQuantity((int) total);
+    }
+
+    /** Removes an existing product using the same ID rules as lookup. */
+    public void removeProduct(String id) throws ProductNotFoundException {
+        Product product = findById(id);
+        products.remove(key(product.getProductId()));
+    }
+
+    private String key(String id) {
+        return id.trim().toUpperCase(java.util.Locale.ROOT);
     }
 }

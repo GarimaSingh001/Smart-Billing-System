@@ -75,7 +75,11 @@ public class Product {
         if (price == null || price.signum() <= 0) {
             throw new IllegalArgumentException("Price must be greater than zero.");
         }
-        this.price = price.setScale(2, RoundingMode.HALF_UP);
+        BigDecimal rounded = price.setScale(2, RoundingMode.HALF_UP);
+        if (rounded.signum() <= 0) {
+            throw new IllegalArgumentException("Price must round to at least 0.01.");
+        }
+        this.price = rounded;
     }
 
     /** Updates the stock quantity, validating that it is non-negative. */

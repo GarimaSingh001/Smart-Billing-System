@@ -1,5 +1,7 @@
 package ui;
 
+import exception.InvalidInputException;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -125,7 +127,7 @@ public class AdminMenu extends MenuHandler {
         success("Product " + id + " added.");
     }
 
-    private void viewAllProducts() {
+    private void viewAllProducts() throws InvalidInputException {
         System.out.println("Sort by: 1) Name  2) Price (low to high)  3) Stock (low to high)");
         Comparator<Product> order;
         switch (input.readInt("Sort option [1-3]: ", 1, 3)) {

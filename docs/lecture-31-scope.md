@@ -53,11 +53,11 @@ integration coverage, including additions after service construction.
 Also pulled merge 263ff33 during the push: corrected sample CSV data and removal
 of the duplicate InputHelper class. The suite was rerun after reconciliation.
 
-The full Main/AdminMenu/CashierMenu build still awaits ProductService,
-InventoryService and ProductComparators. Those three entry files are included in
-the source audit but excluded from the runnable-module build. Their syntax is also
-type-checked separately against temporary interface stubs; stubs are not shipped.
-Do not describe the entire console application as integrated or tested yet.
+ProductService, InventoryService and ProductComparators are now implemented.
+Main, AdminMenu and CashierMenu compile with the real services, with no exclusions
+or stubs. `tests/run-menu-smoke.ps1` starts separate application processes to test
+cashier sale, saved invoice retrieval after restart, and admin product/stock/report
+operations in temporary CSV files. It does not modify the project's data files.
 
 Existing prototype limits remain: UPI is simulated; inventory/invoice file writes
 do not form a crash-atomic transaction; demo mode has no login. Tests and CSV data

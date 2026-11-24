@@ -7,17 +7,17 @@ no lambdas, streams, method references, wait/notify or JDBC. CSV is retained by
 agreement. See `docs/lecture-31-scope.md` for the concept map and supporting APIs.
 Run `tests/check-syllabus.ps1` for the source scan.
 
-**24 Nov integration status:** Member C's cart, invoice, tax and checkout modules
-are implemented and tested with the real product and repository classes. The full
-console build still needs Member B's `InventoryService`,
-`ProductService` and `ProductComparators`. Run `tests/run-billing.ps1` in PowerShell
-to test the available modules; see `docs/member-c-progress.md` for limits and details.
+**24 Nov integration status:** The full console application now compiles, including
+ProductService, InventoryService and ProductComparators. Run `tests/run-billing.ps1`
+in PowerShell for the syllabus scan, full compilation and unit/integration tests.
+Then run `tests/run-menu-smoke.ps1` for real cashier/admin menu and restart checks
+using isolated temporary CSV files. Start the application with
+`java -cp out/billing Main`. See `docs/member-c-progress.md` for limits and details.
 
 **Billing rehearsal:** after those tests compile the modules, run
 `java -cp out/billing ui.BillingDemo`. This standalone demo has no login and uses
 separate `demo-data` CSV files. It supports sample coupon entry, cash payment,
-invoice printing, stock saving and reload. The full application remains pending
-the inventory dependencies above.
+invoice printing, stock saving and reload. Use Main for the full login and role menus.
 
 The billing rehearsal also includes a **what-if coupon comparison**: it displays
 discount, tax and final total for each active coupon and recommends the cheapest.

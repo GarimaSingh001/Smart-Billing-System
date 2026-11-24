@@ -202,3 +202,28 @@ Inventory code was pulled and connected directly to BillingService. CSV and exac
 money calculations are retained. See lecture-31-scope.md for the complete map.
 Only InventoryService, ProductService and ProductComparators remain missing from
 the full menu build; the real Inventory and its tests are now included.
+
+### Full menu integration completed (24 November)
+
+Implemented the three previously pending classes at the user's request:
+- ProductService: add, ID/name search, sorted listing, validated price/quantity
+  update and delete. Updates preserve the shared product object and validate both
+  fields before changing either.
+- InventoryService: receive stock, check availability and list low-stock products.
+- ProductComparators: explicit Comparator implementations for name, price and
+  quantity, with ID tie-breaks and no lambdas or streams.
+
+Inventory now supports deletion and consistent case-insensitive IDs. Stock receipt
+rejects integer overflow. Product rejects prices that round to zero. These changes
+have 31 new service checks; the prior tests and lecture-31 scan still pass.
+
+The full application compiles with no stubs or excluded entry files. Main is now
+available as the SuperMart run configuration in IntelliJ. `tests/run-menu-smoke.ps1`
+verified cashier login, a SAVE10 sale of two P005 products (total 124.74, change
+75.26 from 200.00), stock saved from 60 to 58, and invoice retrieval in a second
+process. An admin run verified add/update, low stock, restock, availability, delete
+and sales-report operations. All checks use temporary copied data and clean it up.
+
+This supersedes earlier missing-service notes. Prototype limitations remain:
+simulated UPI, sample category tax rates, and no crash-atomic transaction spanning
+the product and invoice files. Normal logout/restart persistence was tested.
