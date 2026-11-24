@@ -13,6 +13,10 @@ separate `demo-data` CSV files. It supports sample coupon entry, cash payment,
 invoice printing, stock saving and reload. The full application remains pending
 the inventory dependencies above.
 
+The billing rehearsal also includes a **what-if coupon comparison**: it displays
+discount, tax and final total for each active coupon and recommends the cheapest.
+Previews use the same pricing calculation as checkout and do not change stock.
+
 Java-based Supermarket POS and Billing System
 # Smart-Billing-System
 Java-based Supermarket POS and Billing System

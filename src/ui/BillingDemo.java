@@ -68,7 +68,9 @@ public final class BillingDemo {
             }
             if (cart.isEmpty()) { System.out.println("Empty cart cancelled."); continue; }
             System.out.println("Demo coupons: SAVE10 (10%), LESS50 (Rs 50).");
-            Discount discount = CouponMenu.choose(input, CouponMenu.demoCatalogue());
+            service.CouponService coupons = CouponMenu.demoCatalogue();
+            BillComparisonPrinter.print(new service.CouponAdvisor().compare(cart, coupons));
+            Discount discount = CouponMenu.choose(input, coupons);
             CashPayment cash = new CashPayment(input.readMoney("Cash tendered: "));
             Bill bill;
             try { bill = billing.checkout(cart, "demo-cashier", "WALK-IN", discount, cash); }

@@ -2,8 +2,6 @@ package service;
 
 import exception.InsufficientStockException;
 import exception.InvalidInputException;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -18,7 +16,7 @@ import payment.Payment;
 /** Single-process checkout over the shared inventory products. */
 public final class BillingService {
     private final java.util.function.Supplier<? extends Collection<Product>> products;
-    private final TaxCalculator taxes = new TaxCalculator();
+    private final PricingService pricing = new PricingService();
     private int lastInvoiceNumber;
     private repository.BillRepository billRepository;
 
@@ -64,22 +62,12 @@ public final class BillingService {
             lines.add(new CartItem(product, item.getQuantity()));
             before.add(product.getQuantity());
         }
-        BigDecimal subtotal = lines.stream().map(CartItem::getLineAmount)
-                .reduce(new BigDecimal("0.00"), BigDecimal::add);
-        BigDecimal reduction;
         Bill bill;
         try {
-            reduction = discount.apply(subtotal);
-            if (reduction == null || reduction.signum() < 0 || reduction.compareTo(subtotal) > 0) {
-                throw new IllegalArgumentException("Discount must be between zero and subtotal.");
-            }
-            reduction = reduction.setScale(2, RoundingMode.HALF_UP);
-            BigDecimal ratio = subtotal.signum() == 0 ? BigDecimal.ZERO
-                    : reduction.divide(subtotal, 16, RoundingMode.HALF_UP);
-            BigDecimal tax = taxes.calculateTax(lines, ratio);
+            model.BillQuote quote = pricing.quote(lines, discount, "Checkout");
             bill = new Bill(String.format(java.util.Locale.ROOT, "SM-%04d", lastInvoiceNumber + 1),
-                    LocalDateTime.now(), cashierName, customerId, lines, subtotal, reduction,
-                    tax, subtotal.subtract(reduction).add(tax), payment.getMode());
+                    LocalDateTime.now(), cashierName, customerId, lines, quote.getSubtotal(), quote.getDiscount(),
+                    quote.getTax(), quote.getTotal(), payment.getMode());
         } catch (IllegalArgumentException | NullPointerException e) {
             throw new InvalidInputException("Cannot build invoice: " + e.getMessage());
         }

@@ -170,3 +170,24 @@ overselling, insufficient cash, empty cart and inactive coupon cancellation.
 All existing tests also passed. The demo saves stock after each successful sale;
 invoice and stock are still separate file writes, not a crash-atomic transaction.
 A stock-write error after invoice save stops the demo and requests reconciliation.
+
+### What-if bill comparison (24 November)
+
+Four functional classes add an explainable coupon recommendation before payment:
+- BillQuote stores immutable subtotal, discount, tax and total estimates.
+- PricingService supplies the same arithmetic to previews and BillingService.
+- CouponAdvisor compares no coupon with each active coupon, sorted cheapest first.
+- BillComparisonPrinter displays the breakdown and recommends the lowest total.
+
+The Billing Demo now displays this automatically before coupon entry. The cashier
+menu has the same call, pending full inventory integration. No coupon is applied
+automatically or combined with another. Stock, cart and invoices are untouched by
+comparison; checkout revalidates stock and current prices. A preview is an estimate,
+not a reserved price or stock guarantee. Inactive coupons are omitted. Equal totals
+favor no coupon first, then alphabetical code order. The 26 new tests include
+mixed tax rates, invalid discounts, ties, snapshot stability and quote/checkout
+agreement. Existing tests still pass.
+
+Example: a 1000.00 dairy subtotal gives 1050.00 without a coupon, 997.50 with
+LESS50 and 945.00 with SAVE10. This is a concrete demonstration of interfaces,
+composition, BigDecimal, immutable data and Comparator, not an AI prediction.

@@ -149,6 +149,7 @@ public class CashierMenu extends MenuHandler {
             throw new InvalidInputException("Cannot check out an empty cart.");
         }
         String customerId = chooseCustomer();
+        BillComparisonPrinter.print(new service.CouponAdvisor().compare(cart, CouponMenu.demoCatalogue()));
         Discount discount = chooseDiscount();
         Payment payment = choosePayment();
 
