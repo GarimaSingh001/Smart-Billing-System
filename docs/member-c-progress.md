@@ -131,3 +131,17 @@ must be repeated after the missing inventory classes arrive. Coupon is optional.
 RepositoryTest's old placeholder hashes were updated to real SHA-256 values, its
 checked-exception declaration was corrected, and the second bill fixture's item
 price was corrected to match its declared subtotal.
+
+### Coupon support (24 November)
+
+Added the optional Coupon model and CouponService. Coupon implements Discount,
+delegating to PercentageDiscount or FixedDiscount, and rejects use while inactive.
+CouponService uses a HashMap keyed by normalized codes, rejects duplicates and
+unknown codes, and provides deactivation and sorted listing. CouponTest exercises
+the catalogue and passes a coupon into the existing BillingService checkout.
+
+Usage: register a Coupon with addCoupon, resolve it with findActive(code), then
+pass that result as checkout's Discount argument. Codes are reusable and stored
+only in memory. No coupon is automatically registered or applied. Coupon entry
+in the cashier menu, persistence, expiry dates and usage limits are not implemented.
+The existing missing inventory dependencies still block the full console build.
