@@ -153,7 +153,7 @@ public class CashierMenu extends MenuHandler {
         Payment payment = choosePayment();
 
         Bill bill = billingService.checkout(cart, currentUser.getUsername(), customerId, discount, payment);
-        billRepository.appendBill(bill);
+        // BillingService saves the invoice before returning a successful checkout.
         if (!CustomerService.WALK_IN_ID.equals(customerId)) {
             customerService.linkBill(customerId, bill.getInvoiceNo());
         }

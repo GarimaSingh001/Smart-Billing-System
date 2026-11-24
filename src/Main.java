@@ -60,6 +60,8 @@ public class Main {
             loginLoop();
         } catch (ConsoleInput.InputClosedException e) {
             System.out.println("\n[INFO] Input closed. Shutting down.");
+        } catch (IOException e) {
+            System.out.println("[ERROR] Could not load invoice history: " + e.getMessage());
         } finally {
             saveOnExit();
         }
@@ -67,7 +69,7 @@ public class Main {
 
     // ------------------------------------------------------------------ startup
 
-    private void loadData() {
+    private void loadData() throws IOException {
         List<User> users = loadSafely("users", userRepository);
         if (users.isEmpty()) {
             users = AuthService.demoUsers();
@@ -85,7 +87,7 @@ public class Main {
         productService = new ProductService(inventory);
         inventoryService = new InventoryService(inventory);
         customerService = new CustomerService(customers);
-        billingService = new BillingService(inventory, billRepository.getLastInvoiceNumber());
+        billingService = new BillingService(() -> inventory.getAll(), billRepository.getLastInvoiceNumber(), billRepository);
         System.out.printf("[INFO] Loaded %d user(s), %d product(s), %d customer(s).%n",
                 users.size(), products.size(), customers.size());
     }

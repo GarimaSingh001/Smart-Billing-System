@@ -1,6 +1,12 @@
 
 # Smart-Billing-System
 
+**24 Nov integration status:** Member C's cart, invoice, tax and checkout modules
+are implemented and tested with the real product and repository classes. The full
+console build still needs Member B's `Inventory`, `InventoryService`,
+`ProductService` and `ProductComparators`. Run `tests/run-billing.ps1` in PowerShell
+to test the available modules; see `docs/member-c-progress.md` for limits and details.
+
 Java-based Supermarket POS and Billing System
 # Smart-Billing-System
 Java-based Supermarket POS and Billing System

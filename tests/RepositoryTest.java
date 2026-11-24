@@ -54,7 +54,8 @@ public class RepositoryTest {
 
     private static void testSaveThenReloadUsersAndCustomers(Path dir) throws IOException {
         UserRepository ur = new UserRepository(dir.resolve("u.csv").toString());
-        List<User> users = List.of(User.fromCsv("U1,admin,abc123,ADMIN"), User.fromCsv("U2,cashier,def456,CASHIER"));
+        List<User> users = List.of(User.fromCsv("U1,admin," + util.PasswordUtil.hash("admin123") + ",ADMIN"),
+                User.fromCsv("U2,cashier," + util.PasswordUtil.hash("cash123") + ",CASHIER"));
         ur.saveAll(users);
         List<User> ub = ur.loadAll();
         check("users: reload identical", ub.size() == 2 && ub.get(1).toCsv().equals(users.get(1).toCsv()));
@@ -84,10 +85,10 @@ public class RepositoryTest {
         check("malformed: two warnings recorded", repo.getWarnings().size() == 2);
     }
 
-    private static void testBillsAndSalesReport(Path dir) throws IOException {
+    private static void testBillsAndSalesReport(Path dir) throws IOException, InvalidInputException {
         BillRepository repo = new BillRepository(dir.resolve("bills.csv").toString());
         Product rice = new Product("P1", "Rice", Category.GROCERY, new BigDecimal("500.00"), 10, 5);
-        Product oil = new Product("P2", "Oil", Category.GROCERY, new BigDecimal("100.00"), 10, 5);
+        Product oil = new Product("P2", "Oil", Category.GROCERY, new BigDecimal("150.00"), 10, 5);
         Bill b1 = new Bill("SM-0001", LocalDateTime.of(2026, 11, 20, 10, 30), "cashier", "WALK-IN",
                 List.of(new CartItem(rice, 2)), new BigDecimal("1000.00"), new BigDecimal("100.00"),
                 new BigDecimal("45.00"), new BigDecimal("945.00"), "CASH");

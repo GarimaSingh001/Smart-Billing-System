@@ -88,3 +88,46 @@ PaymentTest covers cash shortage, exact cash, change, rounding, reset after fail
 zero/invalid totals, malformed UPI IDs and calls through the Payment interface.
 Bill, Cart, TaxCalculator and BillingService remain pending, along with integration
 with the teammates' Product and InvalidInputException implementations.
+
+## 24 November 2026
+
+Implemented Cart, Bill, TaxCalculator and BillingService against the real team
+Product, Category and InvalidInputException classes. CartItemTest now uses the
+real Product constructor too. No temporary dependencies are needed.
+
+Cart merges matching IDs, validates quantities, prevents integer overflow and
+provides copies of its lines. Bill deep-copies products and quantities, validates
+subtotal and total, and supports toCsv/fromCsv for Member D's BillRepository.
+Invoice CSV v1 has 11 columns: version, Base64 invoice ID, ISO date-time, Base64
+cashier, Base64 customer, subtotal, discount, tax, total, Base64 payment mode,
+semicolon-separated items. Each item is Base64 Product.toCsv(), a colon, and quantity.
+Base64 is encoding, not encryption. It keeps delimiters/newlines out of CSV fields.
+
+TaxCalculator uses each category's sample percentage after proportional discount;
+the discount argument is a fraction (0.10), while Category rates are percentages
+(5.00). Tax is summed before rounding to cents.
+
+BillingService looks up current products, validates all stock before modifying
+any line, calculates totals, constructs a validated invoice, checks payment,
+reduces stock and saves the invoice when configured with BillRepository. A failed
+invoice save restores stock and keeps the cart. The two-argument constructors
+support in-memory checks; Main uses the repository constructor and the cashier
+menu no longer saves a duplicate invoice. Invoice numbers resume from saved bills.
+
+Use `tests/run-billing.ps1` from PowerShell with JDK 21+ on PATH. This compiles the
+available modules and runs billing, repository, payment, discount, authentication
+and product tests. It deliberately excludes Main, AdminMenu and CashierMenu:
+the full application cannot yet compile without Member B's Inventory,
+InventoryService, ProductService and ProductComparators. These missing classes
+are not replaced with stubs or claimed complete. The IntelliJ learning project
+contains the tested modules and a Billing Test run configuration.
+
+Current limits: checkout is a single-process prototype; inventory edits must not
+run concurrently with checkout. Stock is persisted by the application's existing
+logout/exit save, while invoices save immediately. Cross-file crash recovery is
+not implemented. UPI remains simulated. Full menu integration and a restart demo
+must be repeated after the missing inventory classes arrive. Coupon is optional.
+
+RepositoryTest's old placeholder hashes were updated to real SHA-256 values, its
+checked-exception declaration was corrected, and the second bill fixture's item
+price was corrected to match its declared subtotal.
