@@ -2,10 +2,14 @@ package model;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.Locale;
 import java.util.Objects;
 
-/** Represents a supermarket product item in the inventory and billing system. */
+/**
+ * Represents a supermarket product item in the inventory and billing system.
+ */
 public class Product {
 
     private String productId;
@@ -90,7 +94,10 @@ public class Product {
         this.quantity = quantity;
     }
 
-    /** Returns true when the current stock quantity is less than or equal to the reorder level. */
+    /**
+     * Returns true when the current stock quantity is less than or equal to the
+     * reorder level.
+     */
     public boolean isLowStock() {
         return quantity <= reorderLevel;
     }
@@ -106,14 +113,14 @@ public class Product {
                 String.valueOf(reorderLevel));
     }
 
-    /** Parses a six-column CSV line and constructs a Product object. */
+    /** Parses a CSV line and constructs a Product or PerishableProduct object. */
     public static Product fromCsv(String line) {
         if (line == null || line.isBlank()) {
             throw new IllegalArgumentException("CSV line cannot be null or blank.");
         }
         String[] parts = line.split(",", -1);
-        if (parts.length != 6) {
-            throw new IllegalArgumentException("Expected exactly 6 fields in product CSV line, but found " + parts.length);
+        if (parts.length != 6 && parts.length != 7) {
+            throw new IllegalArgumentException("Expected 6 or 7 fields in product CSV line, but found " + parts.length);
         }
         String id = parts[0].trim();
         String name = parts[1].trim();
@@ -140,6 +147,19 @@ public class Product {
             reorderLevel = Integer.parseInt(parts[5].trim());
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("Invalid reorder level integer format: " + parts[5], e);
+        }
+        if (parts.length == 7) {
+            String expiryStr = parts[6].trim();
+            if (expiryStr.isBlank()) {
+                throw new IllegalArgumentException("Expiry date column cannot be blank in perishable product CSV.");
+            }
+            LocalDate expiryDate;
+            try {
+                expiryDate = LocalDate.parse(expiryStr);
+            } catch (DateTimeParseException e) {
+                throw new IllegalArgumentException("Invalid expiry date format: " + expiryStr, e);
+            }
+            return new PerishableProduct(id, name, category, price, quantity, reorderLevel, expiryDate);
         }
         return new Product(id, name, category, price, quantity, reorderLevel);
     }
