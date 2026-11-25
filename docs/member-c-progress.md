@@ -245,3 +245,14 @@ Removed CouponTest and CouponAdvisorTest because their features were removed.
 Updated demo and full-menu tests to exercise direct discounts, including invalid
 percentage input and a fixed discount capped at the subtotal. The test runner also
 includes the teammate's new ProductPart3Test from commit 05bb590.
+
+### Member C reduced to 11 types (25 November)
+
+Removed TaxCalculator as a separate class; its validated BigDecimal calculation
+is now BillingService.calculateTax. BillingTest retains the mixed-category tax
+assertion. Removed the duplicate standalone BillingDemo entry point and its
+obsolete BillingDemoTest. Main and the full cashier/admin smoke test remain.
+The earlier demo instructions above are historical. No teammate class was removed.
+
+Member C: CartItem, Cart, Bill, BillingService, Payment, CashPayment, UpiPayment,
+Discount, PercentageDiscount, FixedDiscount, InsufficientStockException.

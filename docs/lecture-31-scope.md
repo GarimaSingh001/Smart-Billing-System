@@ -9,7 +9,7 @@ lecture 43-44 lambdas and streams throughout the source and tests.
 | 1-5 | Classes, constructors, private fields, inheritance, interfaces and polymorphism | User/Admin/Cashier, Payment and Discount implementations, Bill |
 | 6-9 | Arrays, strings, formatting, StringBuilder, wrapper classes | Menu tables, CSV fields, invoice output, nullable Integer input |
 | 10-12 | Checked/unchecked exceptions, throw/throws, try/catch/finally | InvalidInputException, stock exceptions, input and repository handling |
-| 13-15 | Validation, console programs, debugging and test cases | BillingDemo, main-method tests, rejected input cases |
+| 13-15 | Validation, console programs, debugging and test cases | Main and CashierMenu, main-method tests, rejected input cases |
 | 16-22 | Lists, maps, sets and collection traversal | Cart ArrayList, Inventory HashMap, account lockout HashSet |
 | 23-25 | Comparable, Comparator and sorting | User ordering, ProductComparators, reports, explicit Comparator implementations |
 | 26-29 | Thread, Runnable, start/sleep/join/interrupt, daemon threads and states | SessionMonitor and thread lifecycle tests |
@@ -60,7 +60,7 @@ cashier sale, saved invoice retrieval after restart, and admin product/stock/rep
 operations in temporary CSV files. It does not modify the project's data files.
 
 Existing prototype limits remain: UPI is simulated; inventory/invoice file writes
-do not form a crash-atomic transaction; demo mode has no login. Tests and CSV data
+do not form a crash-atomic transaction. Tests and CSV data
 for retained features were preserved; obsolete coupon tests were removed with
 the optional coupon/comparison classes on 25 November. Old generated build folders and obsolete demo-support copies can
 be removed; source, team history and user data must remain.

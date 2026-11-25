@@ -9,7 +9,7 @@ import model.*;
 import payment.*;
 import repository.BillRepository;
 import service.BillingService;
-import service.TaxCalculator;
+
 
 /** Tests cart, checkout, invoice snapshots and CSV reload with real team models. */
 public class BillingTest {
@@ -90,7 +90,7 @@ public class BillingTest {
         check(next.getInvoiceNo().equals("SM-0009"), "Invoice numbers continue after reload");
         Product soap = new Product("P2", "Soap", Category.PERSONAL_CARE, new BigDecimal("100"), 1, 0);
         products.add(soap);
-        expect("43.20", new TaxCalculator().calculateTax(List.of(new CartItem(milk, 1), new CartItem(soap, 1)), new BigDecimal("0.1")));
+        expect("43.20", BillingService.calculateTax(List.of(new CartItem(milk, 1), new CartItem(soap, 1)), new BigDecimal("0.1")));
         cart.addItem(milk, 1); cart.addItem(soap, 2);
         int old = milk.getQuantity();
         rejects(new Attempt() {

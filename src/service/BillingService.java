@@ -19,7 +19,6 @@ import payment.Payment;
 public final class BillingService {
     private final Collection<Product> products;
     private final util.Inventory inventory;
-    private final TaxCalculator taxes = new TaxCalculator();
     private int lastInvoiceNumber;
     private repository.BillRepository billRepository;
 
@@ -87,7 +86,7 @@ public final class BillingService {
             reduction = reduction.setScale(2, RoundingMode.HALF_UP);
             BigDecimal ratio = subtotal.signum() == 0 ? BigDecimal.ZERO
                     : reduction.divide(subtotal, 16, RoundingMode.HALF_UP);
-            BigDecimal tax = taxes.calculateTax(lines, ratio);
+            BigDecimal tax = calculateTax(lines, ratio);
             bill = new Bill(String.format(java.util.Locale.ROOT, "SM-%04d", lastInvoiceNumber + 1),
                     LocalDateTime.now(), cashierName, customerId, lines, subtotal, reduction,
                     tax, subtotal.subtract(reduction).add(tax), payment.getMode());
@@ -131,5 +130,20 @@ public final class BillingService {
             if (p.getProductId().equalsIgnoreCase(id)) { return p; }
         }
         throw new InvalidInputException("Product no longer exists: " + id);
+    }
+    /** Accepts a discount fraction (0.10 means 10%) and rounds the summed tax once. */
+    public static BigDecimal calculateTax(List<CartItem> items, BigDecimal discountRatio) {
+        if (items == null || discountRatio == null || discountRatio.signum() < 0
+                || discountRatio.compareTo(BigDecimal.ONE) > 0) {
+            throw new IllegalArgumentException("Discount ratio must be between 0 and 1.");
+        }
+        BigDecimal tax = BigDecimal.ZERO;
+        for (CartItem item : items) {
+            if (item == null) { throw new IllegalArgumentException("Missing cart line."); }
+            BigDecimal discounted = item.getLineAmount().multiply(BigDecimal.ONE.subtract(discountRatio));
+            tax = tax.add(discounted.multiply(item.getProduct().getCategory()
+                    .getDefaultTaxRate()).movePointLeft(2));
+        }
+        return tax.setScale(2, RoundingMode.HALF_UP);
     }
 }

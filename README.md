@@ -14,15 +14,12 @@ Then run `tests/run-menu-smoke.ps1` for real cashier/admin menu and restart chec
 using isolated temporary CSV files. Start the application with
 `java -cp out/billing Main`. See `docs/member-c-progress.md` for limits and details.
 
-**Billing rehearsal:** after those tests compile the modules, run
-`java -cp out/billing ui.BillingDemo`. This standalone demo has no login and uses
-separate `demo-data` CSV files. It supports percentage/fixed discounts, cash payment,
-invoice printing, stock saving and reload. Use Main for the full login and role menus.
-
-**25 Nov simplification:** Seven optional Member C classes for coupons and bill
-comparison were removed. BillingService now calculates checkout totals directly.
-No discount, percentage discount and fixed discount remain available; teammates'
-classes and CSV formats are preserved. See `docs/member-c-progress.md` for the list.
+**25 Nov Member C scope:** 11 production types remain: CartItem, Cart, Bill,
+BillingService, Payment, CashPayment, UpiPayment, Discount, PercentageDiscount,
+FixedDiscount and InsufficientStockException. Tax calculation is now a method in
+BillingService. The separate BillingDemo was removed; run Main for login, cart,
+discounts, payment and invoice persistence. The three inventory helper classes
+belong to the inventory area and are not counted as Member C types.
 
 Java-based Supermarket POS and Billing System
 # Smart-Billing-System
