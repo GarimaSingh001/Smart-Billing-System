@@ -152,7 +152,6 @@ public class CashierMenu extends MenuHandler {
             throw new InvalidInputException("Cannot check out an empty cart.");
         }
         String customerId = chooseCustomer();
-        BillComparisonPrinter.print(new service.CouponAdvisor().compare(cart, CouponMenu.demoCatalogue()));
         Discount discount = chooseDiscount();
         Payment payment = choosePayment();
 
@@ -192,14 +191,10 @@ public class CashierMenu extends MenuHandler {
     }
 
     private Discount chooseDiscount() {
-        System.out.println("Discount: 1) None  2) Percentage  3) Fixed amount  4) Demo coupon");
-        switch (input.readInt("Option [1-4]: ", 1, 4)) {
+        System.out.println("Discount: 1) None  2) Percentage  3) Fixed amount");
+        switch (input.readInt("Option [1-3]: ", 1, 3)) {
             case 2: return new PercentageDiscount(input.readMoney("Discount percent: "));
             case 3: return new FixedDiscount(input.readMoney("Discount amount (Rs): "));
-            case 4: {
-                System.out.println("Demo coupons: SAVE10 (10%), LESS50 (Rs 50).");
-                return CouponMenu.choose(input, CouponMenu.demoCatalogue());
-            }
             default: return new FixedDiscount(BigDecimal.ZERO.setScale(2));
         }
     }

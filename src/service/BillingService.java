@@ -2,6 +2,8 @@ package service;
 
 import exception.InsufficientStockException;
 import exception.InvalidInputException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -17,7 +19,7 @@ import payment.Payment;
 public final class BillingService {
     private final Collection<Product> products;
     private final util.Inventory inventory;
-    private final PricingService pricing = new PricingService();
+    private final TaxCalculator taxes = new TaxCalculator();
     private int lastInvoiceNumber;
     private repository.BillRepository billRepository;
 
@@ -76,10 +78,19 @@ public final class BillingService {
         }
         Bill bill;
         try {
-            model.BillQuote quote = pricing.quote(lines, discount, "Checkout");
+            BigDecimal subtotal = new BigDecimal("0.00");
+            for (CartItem line : lines) { subtotal = subtotal.add(line.getLineAmount()); }
+            BigDecimal reduction = discount.apply(subtotal);
+            if (reduction == null || reduction.signum() < 0 || reduction.compareTo(subtotal) > 0) {
+                throw new IllegalArgumentException("Discount must be between zero and subtotal.");
+            }
+            reduction = reduction.setScale(2, RoundingMode.HALF_UP);
+            BigDecimal ratio = subtotal.signum() == 0 ? BigDecimal.ZERO
+                    : reduction.divide(subtotal, 16, RoundingMode.HALF_UP);
+            BigDecimal tax = taxes.calculateTax(lines, ratio);
             bill = new Bill(String.format(java.util.Locale.ROOT, "SM-%04d", lastInvoiceNumber + 1),
-                    LocalDateTime.now(), cashierName, customerId, lines, quote.getSubtotal(), quote.getDiscount(),
-                    quote.getTax(), quote.getTotal(), payment.getMode());
+                    LocalDateTime.now(), cashierName, customerId, lines, subtotal, reduction,
+                    tax, subtotal.subtract(reduction).add(tax), payment.getMode());
         } catch (IllegalArgumentException | NullPointerException e) {
             throw new InvalidInputException("Cannot build invoice: " + e.getMessage());
         }

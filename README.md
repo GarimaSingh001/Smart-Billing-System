@@ -16,12 +16,13 @@ using isolated temporary CSV files. Start the application with
 
 **Billing rehearsal:** after those tests compile the modules, run
 `java -cp out/billing ui.BillingDemo`. This standalone demo has no login and uses
-separate `demo-data` CSV files. It supports sample coupon entry, cash payment,
+separate `demo-data` CSV files. It supports percentage/fixed discounts, cash payment,
 invoice printing, stock saving and reload. Use Main for the full login and role menus.
 
-The billing rehearsal also includes a **what-if coupon comparison**: it displays
-discount, tax and final total for each active coupon and recommends the cheapest.
-Previews use the same pricing calculation as checkout and do not change stock.
+**25 Nov simplification:** Seven optional Member C classes for coupons and bill
+comparison were removed. BillingService now calculates checkout totals directly.
+No discount, percentage discount and fixed discount remain available; teammates'
+classes and CSV formats are preserved. See `docs/member-c-progress.md` for the list.
 
 Java-based Supermarket POS and Billing System
 # Smart-Billing-System

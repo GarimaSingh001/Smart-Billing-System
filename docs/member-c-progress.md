@@ -227,3 +227,21 @@ and sales-report operations. All checks use temporary copied data and clean it u
 This supersedes earlier missing-service notes. Prototype limitations remain:
 simulated UPI, sample category tax rates, and no crash-atomic transaction spanning
 the product and invoice files. Normal logout/restart persistence was tested.
+
+### Member C class reduction (25 November)
+
+Removed seven optional production classes at the user's request:
+Coupon, BillQuote, CouponService, CouponAdvisor, PricingService, CouponMenu and
+BillComparisonPrinter. Earlier coupon and what-if comparison entries above are
+historical and no longer describe the current application.
+
+BillingService now owns the subtotal, discount and total calculation and continues
+to use TaxCalculator. Cart validation, exact BigDecimal money, cash/UPI payment,
+stock deduction, invoice persistence and failure handling remain. Both menus offer
+no discount, percentage discount or fixed discount. CashierMenu only lost the
+integration calls for the removed features; no teammate class was deleted.
+
+Removed CouponTest and CouponAdvisorTest because their features were removed.
+Updated demo and full-menu tests to exercise direct discounts, including invalid
+percentage input and a fixed discount capped at the subtotal. The test runner also
+includes the teammate's new ProductPart3Test from commit 05bb590.

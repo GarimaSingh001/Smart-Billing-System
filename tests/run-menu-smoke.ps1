@@ -11,7 +11,7 @@ $billFile = Join-Path $runDirectory 'data/bills.csv'
 if (Test-Path -LiteralPath $billFile) { Remove-Item -LiteralPath $billFile }
 Push-Location $runDirectory
 try {
-    $cashier = @('1','cashier','cash123','1','1','P005','2','4','','4','SAVE10','1','200','4','2')
+    $cashier = @('1','cashier','cash123','1','1','P005','2','4','','2','10','1','200','4','2')
     $sale = (($cashier -join "`n") | & java -cp $classes Main 2>&1) -join "`n"
     if ($LASTEXITCODE -ne 0 -or $sale.Contains('[ERROR]') -or !$sale.Contains('124.74') -or !$sale.Contains('75.26')) {
         throw "Cashier sale failed:`n$sale"
@@ -21,7 +21,7 @@ try {
     if (($milk -split ',')[4] -ne '58') { throw 'Cashier stock was not persisted.' }
     $bills = @(Get-Content -LiteralPath $billFile | Where-Object { $_ -and !$_.StartsWith('#') })
     if ($bills.Count -ne 1 -or ($bills[0] -split ',')[8] -ne '124.74') { throw 'Expected one saved invoice for 124.74.' }
-    Write-Output 'PASS: cashier login, coupon sale, change, invoice save and persisted stock.'
+    Write-Output 'PASS: cashier login, percentage discount, change, invoice save and persisted stock.'
 
     $history = @('1','cashier','cash123','3','SM-0001','4','2')
     $restart = (($history -join "`n") | & java -cp $classes Main 2>&1) -join "`n"

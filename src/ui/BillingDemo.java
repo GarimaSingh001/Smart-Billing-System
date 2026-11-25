@@ -15,6 +15,8 @@ import model.Category;
 import model.Product;
 import payment.CashPayment;
 import payment.Discount;
+import payment.FixedDiscount;
+import payment.PercentageDiscount;
 import repository.BillRepository;
 import repository.ProductRepository;
 import service.BillingService;
@@ -32,9 +34,9 @@ public final class BillingDemo {
         catch (IOException e) { System.out.println("[ERROR] Demo storage unavailable: " + e.getMessage()); }
     }
 
-    /** Runs cash sales with sample products and coupons, saving invoices and updated stock. */
+    /** Runs cash sales with sample products and discounts, saving invoices and updated stock. */
     public static void run(ConsoleInput input, Path directory) throws IOException {
-        System.out.println("SUPERMART BILLING REHEARSAL - sample products and coupons, no login");
+        System.out.println("SUPERMART BILLING REHEARSAL - sample products, no login");
         System.out.println("Demo files: " + directory.toAbsolutePath());
         ProductRepository productRepo = new ProductRepository(directory.resolve("products.csv").toString());
         BillRepository billRepo = new BillRepository(directory.resolve("bills.csv").toString());
@@ -70,10 +72,7 @@ public final class BillingDemo {
                 } catch (InvalidInputException e) { System.out.println("[ERROR] " + e.getMessage()); }
             }
             if (cart.isEmpty()) { System.out.println("Empty cart cancelled."); continue; }
-            System.out.println("Demo coupons: SAVE10 (10%), LESS50 (Rs 50).");
-            service.CouponService coupons = CouponMenu.demoCatalogue();
-            BillComparisonPrinter.print(new service.CouponAdvisor().compare(cart, coupons));
-            Discount discount = CouponMenu.choose(input, coupons);
+            Discount discount = chooseDiscount(input);
             CashPayment cash = new CashPayment(input.readMoney("Cash tendered: "));
             Bill bill;
             try { bill = billing.checkout(cart, "demo-cashier", "WALK-IN", discount, cash); }
@@ -89,6 +88,19 @@ public final class BillingDemo {
                         + " is saved but stock could not be saved. Reconcile stock before retrying.", e);
             }
             System.out.println("Invoice and updated stock saved.");
+        }
+    }
+
+    private static Discount chooseDiscount(ConsoleInput input) {
+        while (true) {
+            System.out.println("Discount: 1) None  2) Percentage  3) Fixed amount");
+            try {
+                switch (input.readInt("Option [1-3]: ", 1, 3)) {
+                    case 2: return new PercentageDiscount(input.readMoney("Discount percent: "));
+                    case 3: return new FixedDiscount(input.readMoney("Discount amount: "));
+                    default: return new FixedDiscount(BigDecimal.ZERO);
+                }
+            } catch (IllegalArgumentException e) { System.out.println("[ERROR] " + e.getMessage()); }
         }
     }
 }
